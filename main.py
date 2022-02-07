@@ -2,10 +2,10 @@ import numpy as np
 import torch
 import json
 from collections import namedtuple
-from safe_multi_agents.agent import ReinforceAgent
-from safe_multi_agents.buffer import Buffer
-from safe_multi_agents.meta_agent import MetaAgent
-from safe_multi_agents.util import make_env, print_info
+from safe_multi_agent_RL.agent import ReinforceAgent
+from safe_multi_agent_RL.buffer import Buffer
+from safe_multi_agent_RL.meta_agent import MetaAgent
+from safe_multi_agent_RL.util import make_env, print_info
 
 
 if __name__ == '__main__':
