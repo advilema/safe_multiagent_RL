@@ -35,7 +35,7 @@ class MetaAgent():
         sign = 1 if self.leq else -1
         mean_values = np.array([np.mean(value) for value in np.array(self.constraint_values).T])
         self.lambdas += sign * self.lr * (mean_values - self.thresholds)
-        self.lambdas = np.array([max(lam, 0.0) for lam in self.lambdas])
+        self.lambdas = np.maximum(self.lambdas, np.zeros(self.lambdas.shape))
         self.lr = self.lr / self.decay
         self.constraint_values = []
         self.learning_cycle = 0

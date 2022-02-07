@@ -64,22 +64,23 @@ class Buffer:
         batch_scores, batch_modified_scores = self._get_batch_scores()
 
         # plot scores
-        for agent in range(self.params.n_agents):
-            plt.figure()
-            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent])
-            plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
-            plt.ylabel('Score')
-            plt.xlabel('Episode #')
-            plt.savefig(self.save_path + '/scores_agent' + str(agent) + '.png')
-            plt.close()
+        plt.figure()
+        plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[0])
+        plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
+        plt.ylabel('Score')
+        plt.xlabel('Episode #')
+        plt.savefig(self.save_path + '/scores' + '.png')
+        plt.close()
 
         # plot modified scores
         for agent in range(self.params.n_agents):
             plt.figure()
-            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_modified_scores).T[agent])
+            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent], label='original')
+            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_modified_scores).T[agent], label='modified')
             plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
             plt.ylabel('Score')
             plt.xlabel('Episode #')
+            plt.legend()
             plt.savefig(self.save_path + '/modified_scores_agent' + str(agent) + '.png')
             plt.close()
 
@@ -88,12 +89,14 @@ class Buffer:
         maximum_constr = np.array(self.params.max_t) - np.array(self.params.thresholds)
         minimum_constr = - np.array(self.params.thresholds)
         plt.figure()
-        [plt.plot(np.arange(1, n_batches, self.params.batch_size), constr) for constr in batch_constraints.T]
+        [plt.plot(np.arange(1, n_batches, self.params.batch_size), constr, label='agent ' + str(agent))
+         for agent, constr in enumerate(batch_constraints.T)]
         plt.plot([1, n_batches], [0, 0], 'r')  # below this line the constraints are satisfied
         plt.plot([1, n_batches], [maximum_constr, maximum_constr], color='black')
         plt.plot([1, n_batches], [minimum_constr, minimum_constr], color='black')
         plt.ylabel('Constraints')
         plt.xlabel('Episode #')
+        plt.legend()
         plt.savefig(self.save_path + '/constr.png')
         plt.close()
 
@@ -110,11 +113,12 @@ class Buffer:
 
         # plot lambdas
         plt.figure()
-        [plt.plot(np.arange(1, n_batches, self.params.batch_size * self.params.n_agents_learning_cycles), lam)
-         for lam in np.array(self.lambdas).T]
+        [plt.plot(np.arange(1, n_batches, self.params.batch_size * self.params.n_agents_learning_cycles), lam,
+                  legend="agent " + str(agent))
+         for agent, lam in enumerate(np.array(self.lambdas).T)]
         plt.ylabel('Constraints')
         plt.xlabel('Episode #')
-        plt.savefig(self.save_path + '/constr')
+        plt.savefig(self.save_path + '/lambdas')
         plt.close()
 
         path_json = self.save_path + '/params.json'
