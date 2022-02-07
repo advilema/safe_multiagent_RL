@@ -1,4 +1,4 @@
-#Safe Multi-Agent RL
+# Safe Multi-Agent RL
 
 To start the experiment simply run:
 ```bash
