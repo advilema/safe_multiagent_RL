@@ -1,5 +1,5 @@
 {"env": "Explore",
-  "n_meta_agent_learning_cycles": 100,
+  "n_meta_agent_learning_cycles": 50,
   "n_agents_learning_cycles": 30,
   "batch_size": 50,
   "max_t": 50,
