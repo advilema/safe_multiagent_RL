@@ -114,7 +114,7 @@ class Buffer:
         # plot lambdas
         plt.figure()
         [plt.plot(np.arange(1, n_batches, self.params.batch_size * self.params.n_agents_learning_cycles), lam,
-                  legend="agent " + str(agent))
+                  label="agent " + str(agent))
          for agent, lam in enumerate(np.array(self.lambdas).T)]
         plt.ylabel('Constraints')
         plt.xlabel('Episode #')
