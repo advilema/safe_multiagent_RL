@@ -29,5 +29,5 @@ the keys in the dictionary:
 }
 ```
 
-The results are saved at the end of each meta agent learning cycle, so you can stop the run whenever you want without loosing
-the past results.
+The results are saved once every 5 meta agent learning cycles, so even if you stop the run you don't loose all of the experiment's
+results.

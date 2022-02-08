@@ -54,4 +54,5 @@ if __name__ == '__main__':
         print('Lambdas: {}'.format(meta_agent.lambdas))
 
         buffer.append_lambdas(meta_agent.lambdas)
-        buffer.save_results()
+        if meta_agent_learning_cycle % 5 == 0:
+            buffer.save_results()
