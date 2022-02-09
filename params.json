@@ -5,14 +5,14 @@
   "max_t": 50,
   "gamma": 0.999,
   "lr": 0.003,
-  "meta_lr": 0.01,
+  "meta_lr": 0.003,
   "decay": 1.0,
   "size": 5,
   "n_agents": 3,
   "weights": [1,2,3],
   "thresholds": [25, 25, 25],
   "shuffle": false,
-  "numpy_seed": 0,
-  "torch_seed": 0,
+  "numpy_seed": 2,
+  "torch_seed": 2,
   "print_every": 1
 }

@@ -5,9 +5,9 @@ import os
 
 
 class Buffer:
-    def __init__(self, params, constrained=True):
+    def __init__(self, params, constrained=True, save_path=None):
         self.params = params
-        self.save_path = None
+        self.save_path = save_path
         self.constrained = constrained
         self.lambdas = []
 
@@ -140,7 +140,8 @@ class Buffer:
 
         path_json = self.save_path + '/params.json'
         with open(path_json, 'w') as file:
-            json.dump(self.params._asdict(), file)
+            #json.dump(self.params._asdict(), file)
+            json.dump(vars(self.params), file)
 
         np.save(self.save_path + '/constr.npy', self.constraints)
         np.save(self.save_path + '/scores.npy', self.scores)

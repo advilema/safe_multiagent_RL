@@ -1,6 +1,6 @@
 {"env": "ExploreContinuous",
   "n_meta_agent_learning_cycles": 1,
-  "n_agents_learning_cycles": 100,
+  "n_agents_learning_cycles": 150,
   "batch_size": 50,
   "max_t": 50,
   "gamma": 0.999,
@@ -12,7 +12,7 @@
   "weights": [1,2,3],
   "thresholds": [25, 25, 25],
   "shuffle": false,
-  "numpy_seed": 0,
+  "numpy_seed": 1,
   "torch_seed": 0,
   "print_every": 1
 }
