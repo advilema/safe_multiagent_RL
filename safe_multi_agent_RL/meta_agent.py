@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class MetaAgent():
+class MetaAgent:
     def __init__(self, constraint_space, gamma, lr, thresholds, leq=True, start_learning_cycle=10, decay=1.0):
         self.constraint_space = constraint_space
         self.gamma = gamma

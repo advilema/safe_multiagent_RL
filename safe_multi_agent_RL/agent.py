@@ -1,13 +1,26 @@
 from torch.distributions import Categorical
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import torch.nn.utils as utils
+from torch.autograd import Variable
 
 
-class Policy(nn.Module):
-    def __init__(self, env, hidden_size=16,):
-        super(Policy, self).__init__()
+pi = Variable(torch.FloatTensor([math.pi])).cpu()
+
+
+def normal(x, mu, sigma_sq):
+    a = (-1 * (Variable(x) - mu).pow(2) / (2 * sigma_sq)).exp()
+    b = 1 / (2 * sigma_sq * pi.expand_as(sigma_sq)).sqrt()
+    return a * b
+
+
+class DiscretePolicy(nn.Module):
+    def __init__(self, env, hidden_size=16):
+        super(DiscretePolicy, self).__init__()
         state_size = env.state_space
         action_size = env.action_space
         self.fc1 = nn.Linear(state_size, hidden_size)
@@ -27,9 +40,43 @@ class Policy(nn.Module):
         return action.item(), m.log_prob(action)
 
 
+class ContinuousPolicy(nn.Module):
+    def __init__(self, env, hidden_size=16,):
+        super(ContinuousPolicy, self).__init__()
+        state_size = env.state_space
+        action_size = env.action_space
+
+        self.fc1 = nn.Linear(state_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, action_size)
+        self.fc2_ = nn.Linear(hidden_size, action_size)
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        mu = self.fc2(x)
+        sigma_sq = self.fc2_(x)
+
+        return mu, sigma_sq
+
+    def act(self, state):
+        state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+        mu, sigma_sq = self.forward(state)
+        sigma_sq = F.softplus(sigma_sq)
+
+        eps = torch.randn(mu.size())
+        # calculate the probability
+        action = (mu + sigma_sq.sqrt() * Variable(eps).to(self.device)).data
+        prob = normal(action, mu, sigma_sq)
+
+        log_prob = prob.log()
+        return action.cpu().detach().numpy(), log_prob
+
 class ReinforceAgent:
-    def __init__(self, env, lr, gamma, hidden_size=16):
-        self.model = Policy(env, hidden_size)
+    def __init__(self, env, lr, gamma, continuous=False, hidden_size=16):
+        if continuous:
+            self.model = ContinuousPolicy(env, hidden_size)
+        else:
+            self.model = DiscretePolicy(env, hidden_size)
         self.model = self.model.to(self.model.device)
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.model.train()

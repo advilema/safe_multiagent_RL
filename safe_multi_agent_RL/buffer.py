@@ -5,9 +5,10 @@ import os
 
 
 class Buffer:
-    def __init__(self, params):
+    def __init__(self, params, constrained=True):
         self.params = params
         self.save_path = None
+        self.constrained = constrained
         self.lambdas = []
 
         self.rewards = []
@@ -52,6 +53,8 @@ class Buffer:
                 os.mkdir("results/")
             path = "results/" + self.params.env + "_s" + str(self.params.size) + "_n" + str(self.params.n_agents) + \
                    "_" + str(self.params.numpy_seed) + "-" + str(self.params.torch_seed) + '_'
+            if not self.constrained:
+                path += 'unconstr_'
             i = 0
             while True:
                 if not os.path.isdir(path + str(i)):
@@ -71,18 +74,6 @@ class Buffer:
         plt.xlabel('Episode #')
         plt.savefig(self.save_path + '/scores' + '.png')
         plt.close()
-
-        # plot modified scores
-        for agent in range(self.params.n_agents):
-            plt.figure()
-            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent], label='original')
-            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_modified_scores).T[agent], label='modified')
-            plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
-            plt.ylabel('Score')
-            plt.xlabel('Episode #')
-            plt.legend()
-            plt.savefig(self.save_path + '/modified_scores_agent' + str(agent) + '.png')
-            plt.close()
 
         # plot constraints
         batch_constraints = np.array(self._get_batch_constraints())
@@ -111,15 +102,41 @@ class Buffer:
         plt.savefig(self.save_path + '/constr_excess.png')
         plt.close()
 
-        # plot lambdas
+        #plot constraints regret
+        constr_integral = [constr_excess[0]]
+        for i in range(1, len(constr_excess)):
+            constr_integral.append(constr_integral[i-1]+constr_excess[i])
+        constr_regret = [c/(i+1) for i, c in enumerate(constr_integral)]
         plt.figure()
-        [plt.plot(np.arange(1, n_batches, self.params.batch_size * self.params.n_agents_learning_cycles), lam,
-                  label="agent " + str(agent))
-         for agent, lam in enumerate(np.array(self.lambdas).T)]
-        plt.ylabel('Constraints')
+        plt.plot(np.arange(1, n_batches, self.params.batch_size), constr_excess)
+        plt.plot([1, n_batches], [0, 0], 'r')
+        plt.ylabel('Constraint Regret')
         plt.xlabel('Episode #')
-        plt.savefig(self.save_path + '/lambdas')
+        plt.savefig(self.save_path + '/constr_regret.png')
         plt.close()
+
+        if self.constrained:
+            # plot modified scores
+            for agent in range(self.params.n_agents):
+                plt.figure()
+                plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent], label='original')
+                plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_modified_scores).T[agent], label='modified')
+                plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
+                plt.ylabel('Score')
+                plt.xlabel('Episode #')
+                plt.legend()
+                plt.savefig(self.save_path + '/modified_scores_agent' + str(agent) + '.png')
+                plt.close()
+
+            # plot lambdas
+            plt.figure()
+            [plt.plot(np.arange(1, n_batches, self.params.batch_size * self.params.n_agents_learning_cycles), lam,
+                      label="agent " + str(agent))
+             for agent, lam in enumerate(np.array(self.lambdas).T)]
+            plt.ylabel('Constraints')
+            plt.xlabel('Episode #')
+            plt.savefig(self.save_path + '/lambdas')
+            plt.close()
 
         path_json = self.save_path + '/params.json'
         with open(path_json, 'w') as file:
@@ -128,7 +145,8 @@ class Buffer:
         np.save(self.save_path + '/constr.npy', self.constraints)
         np.save(self.save_path + '/scores.npy', self.scores)
         np.save(self.save_path + '/modified_scores.npy', self.modified_scores)
-        np.save(self.save_path + '/lambdas.npy', self.lambdas)
+        if self.constrained:
+            np.save(self.save_path + '/lambdas.npy', self.lambdas)
         return
 
     def _get_batch_scores(self):

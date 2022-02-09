@@ -1,14 +1,18 @@
-from multiagent_envs.explore import Explore
+from multiagent_envs.explore import ExploreContinuous, ExploreDiscrete
 from multiagent_envs.grid import Grid
 
 
 def make_env(params):
-    if params.env == "Explore":
-        return Explore(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights)
+    continuous = False
+    if params.env == "ExploreDiscrete":
+        return ExploreDiscrete(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
+    elif params.env == "ExploreContinuous":
+        continuous = True
+        return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
     elif params.env == "Grid":
-        return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle)
+        return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
     else:
-        print("Error: params.env need to be either Explore or Grid")
+        print("Error: params.env need to be either ExploreDiscrete, ExploreContinuous or Grid")
         exit(1)
 
 

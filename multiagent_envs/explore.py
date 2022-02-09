@@ -4,7 +4,7 @@ from scipy.spatial import distance_matrix
 from random import random
 
 
-class ContinuousExplore(object):
+class ExploreContinuous(object):
     """This class implements a grid MDP."""
 
     def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
@@ -16,7 +16,7 @@ class ContinuousExplore(object):
         else:
             self.fieldview_size = fieldview_size
         self.agents = [Agent(i, size, continuous=True) for i in range(n_agents)]
-        self.action_space = 5  # up, down, left, right, stay
+        self.action_space = 2  # (up, down), (left, right)
         self.state_space = 2 * self.n_agents
         self.constraint_space = [1 for i in range(n_agents)]
         self.shuffle = shuffle
@@ -51,7 +51,6 @@ class ContinuousExplore(object):
 
     def transition(self, action):
         """Transition p(s'|s,a)."""
-        directions = np.array([[1, -1, 0, 0, 0], [0, 0, -1, 1, 0]])
         states = []
 
         for agent, a in zip(self.agents, action):
@@ -59,7 +58,7 @@ class ContinuousExplore(object):
                 states.append(agent.state.copy())
                 continue
             x, y = agent.state
-            dx, dy = np.dot(directions, a)
+            dx, dy = np.squeeze(a)
             x_ = max(0, min(self.size - 1, x + dx))
             y_ = max(0, min(self.size - 1, y + dy))
             agent.state = [x_, y_]
@@ -82,10 +81,9 @@ class ContinuousExplore(object):
         return reward
 
     def constraint(self, action):
-        travelled_distance = [1, 1, 1, 1, 0]
         con = []
         for a in action:
-            con.append(np.dot(travelled_distance, a))
+            con.append(np.linalg.norm(np.squeeze(a)))
         return con
 
     def check_done(self):
@@ -151,10 +149,12 @@ class ContinuousExplore(object):
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
 
 
-class DiscreteExplore(ContinuousExplore):
-    def __init__(self, size, n_agents):
-        super().__init__(size, n_agents)
+class ExploreDiscrete(ExploreContinuous):
+    def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
+        super().__init__(self, size, n_agents, shuffle=shuffle, agents_size=agents_size, fieldview_size=fieldview_size,
+                         weights=weights)
         self.agents = [Agent(i, size, continuous=False) for i in range(n_agents)]
+        self.action_space = 5 # up, down, left, right, stay
 
     def transition(self, action):
         """Transition p(s'|s,a)."""
@@ -213,7 +213,7 @@ if __name__ == '__main__':
     n_agents = 3
     n_landmarks = 3
 
-    env = ContinuousExplore(size, n_agents, shuffle=False, fieldview_size=4)
+    env = ExploreContinuous(size, n_agents, shuffle=False, fieldview_size=4)
 
     state = env.reset()
 
