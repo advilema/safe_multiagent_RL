@@ -48,7 +48,7 @@ if __name__ == '__main__':
                     else:
                         modified_reward = reward
                     #if batch%50 == 0:
-                        #env.render()
+                    #    env.render()
 
                     for agent, log_prob, rew, constr in zip(agents, log_probs, modified_reward, constraint):
                         agent.append(log_prob, rew)

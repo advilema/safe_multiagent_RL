@@ -151,10 +151,11 @@ class ExploreContinuous(object):
 
 class ExploreDiscrete(ExploreContinuous):
     def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
-        super().__init__(self, size, n_agents, shuffle=shuffle, agents_size=agents_size, fieldview_size=fieldview_size,
+        super().__init__(self, size, n_agents, agents_size=agents_size, fieldview_size=fieldview_size,
                          weights=weights)
         self.agents = [Agent(i, size, continuous=False) for i in range(n_agents)]
         self.action_space = 5 # up, down, left, right, stay
+        self.shuffle = shuffle
 
     def transition(self, action):
         """Transition p(s'|s,a)."""
