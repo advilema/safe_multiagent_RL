@@ -51,7 +51,7 @@ class Buffer:
         if self.save_path is None:
             if not os.path.isdir("results/"):
                 os.mkdir("results/")
-            path = "results/" + self.params.env + "_s" + str(self.params.size) + "_n" + str(self.params.n_agents) + \
+            path = "results/" + self.params.environment + "_s" + str(self.params.size) + "_n" + str(self.params.n_agents) + \
                    "_" + str(self.params.numpy_seed) + "-" + str(self.params.torch_seed) + '_'
             if not self.constrained:
                 path += 'unconstr_'
