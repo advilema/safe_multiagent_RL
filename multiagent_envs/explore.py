@@ -2,6 +2,7 @@ import numpy as np
 from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
+import time
 
 
 class ExploreContinuous(object):
@@ -12,7 +13,7 @@ class ExploreContinuous(object):
         self.n_agents = n_agents
         self.agents_size = agents_size
         if fieldview_size is None:
-            self.fieldview_size = size / n_agents
+            self.fieldview_size = size / (2*np.sqrt(n_agents))
         else:
             self.fieldview_size = fieldview_size
         self.agents = [Agent(i, size, continuous=True) for i in range(n_agents)]
@@ -122,31 +123,37 @@ class ExploreContinuous(object):
             return
 
         if self.viewer is None:
-            self.viewer = rendering.Viewer(500, 500)
+            self.viewer = rendering.Viewer(650, 650)
             self.viewer.set_bounds(0, self.size, 0, self.size)
 
         fieldviews_render = []
         agents_render = []
 
-        for agent in self.agents:
+        colours = self.make_colours()
+        for i, agent in enumerate(self.agents):
             agent_x, agent_y = agent.state
             transform = rendering.Transform(translation=(agent_x + 0.5, agent_y + 0.5))
 
-            fieldview_render = self.viewer.draw_circle(radius=self.fieldview_size)
-            fieldview_render.set_color(.5, 0, 0)
+            fieldview_render = self.viewer.draw_circle(radius=self.fieldview_size, filled=False, res=100)
+            fieldview_render.set_color(*colours[i])
             fieldview_render.add_attr(transform)
             fieldviews_render.append(fieldview_render)
 
-        for agent in self.agents:
+        for i, agent in enumerate(self.agents):
             agent_x, agent_y = agent.state
             transform = rendering.Transform(translation=(agent_x + 0.5, agent_y + 0.5))
 
             agent_render = self.viewer.draw_circle(radius=0.4)
-            agent_render.set_color(.8, 0, 0)
+            agent_render.set_color(*colours[i])
             agent_render.add_attr(transform)
             agents_render.append(agent_render)
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+
+
+    def make_colours(self):
+        return np.random.rand(self.n_agents, 3).tolist()
+
 
 
 class ExploreDiscrete(ExploreContinuous):
@@ -211,10 +218,10 @@ class Agent(object):
 
 if __name__ == '__main__':
     size = 10
-    n_agents = 3
-    n_landmarks = 3
+    n_agents = 10
+    np.random.seed(9)
 
-    env = ExploreContinuous(size, n_agents, shuffle=False, fieldview_size=4)
+    env = ExploreContinuous(size, n_agents, shuffle=False)
 
     state = env.reset()
 
@@ -225,3 +232,4 @@ if __name__ == '__main__':
         state, reward, constraint, done = env.step(action)
 
         env.render()
+        time.sleep(100)
