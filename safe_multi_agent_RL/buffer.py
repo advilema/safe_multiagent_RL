@@ -83,8 +83,8 @@ class Buffer:
         [plt.plot(np.arange(1, n_batches, self.params.batch_size), constr, label='agent ' + str(agent))
          for agent, constr in enumerate(batch_constraints.T)]
         plt.plot([1, n_batches], [0, 0], 'r')  # below this line the constraints are satisfied
-        plt.plot([1, n_batches], [maximum_constr, maximum_constr], color='black')
-        plt.plot([1, n_batches], [minimum_constr, minimum_constr], color='black')
+        #plt.plot([1, n_batches], [maximum_constr, maximum_constr], color='black')
+        #plt.plot([1, n_batches], [minimum_constr, minimum_constr], color='black')
         plt.ylabel('Constraints')
         plt.xlabel('Episode #')
         plt.legend()
@@ -108,7 +108,7 @@ class Buffer:
             constr_integral.append(constr_integral[i-1]+constr_excess[i])
         constr_regret = [c/(i+1) for i, c in enumerate(constr_integral)]
         plt.figure()
-        plt.plot(np.arange(1, n_batches, self.params.batch_size), constr_excess)
+        plt.plot(np.arange(1, n_batches, self.params.batch_size), constr_regret)
         plt.plot([1, n_batches], [0, 0], 'r')
         plt.ylabel('Constraint Regret')
         plt.xlabel('Episode #')
