@@ -232,4 +232,4 @@ if __name__ == '__main__':
         state, reward, constraint, done = env.step(action)
 
         env.render()
-        time.sleep(100)
+        #time.sleep(100)

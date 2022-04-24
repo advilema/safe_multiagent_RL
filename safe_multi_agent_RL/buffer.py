@@ -68,7 +68,8 @@ class Buffer:
 
         # plot scores
         plt.figure()
-        plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[0])
+        for ag in range(np.array(batch_scores).shape[1]):
+            plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[ag])
         plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
         plt.ylabel('Score')
         plt.xlabel('Episode #')
@@ -102,6 +103,7 @@ class Buffer:
         plt.savefig(self.save_path + '/constr_excess.png')
         plt.close()
 
+        """
         #plot constraints regret
         constr_integral = [constr_excess[0]]
         for i in range(1, len(constr_excess)):
@@ -114,6 +116,7 @@ class Buffer:
         plt.xlabel('Episode #')
         plt.savefig(self.save_path + '/constr_regret.png')
         plt.close()
+        """
 
         if self.constrained:
             # plot modified scores
