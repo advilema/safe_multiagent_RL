@@ -5,6 +5,7 @@ from safe_multi_agent_RL.buffer import Buffer
 from safe_multi_agent_RL.meta_agent import MetaAgent
 from safe_multi_agent_RL.util import make_env, print_info
 from cli_parse import cli
+import time
 
 
 if __name__ == '__main__':
@@ -45,8 +46,9 @@ if __name__ == '__main__':
                         modified_reward = meta_agent.act(constraint, reward)
                     else:
                         modified_reward = reward
-                    #if batch%50 == 0:
-                    #    env.render()
+                    if agents_learning_cycle > 0 and batch%100 == 0:
+                        env.render()
+                        time.sleep(0.1)
 
                     for agent, log_prob, rew, constr in zip(agents, log_probs, modified_reward, constraint):
                         agent.append(log_prob, rew)

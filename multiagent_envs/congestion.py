@@ -3,20 +3,30 @@ from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
-class PotentialGrid(object):
+
+HOURLY_COMPENSATION = 30 #30 euro per hour
+AVERAGE_RIDE_COMPENSATION = 7.5
+AVERAGE_RIDE_COST = 4
+CONGESTION_COST = 2
+
+
+class Congestion(object):
     """This class implements a potential grid MDP.
     In the potential grid, all the agents start in the bottom left corner of the grid. Each square in the grid,
     has a score which is minus the L1 distance to the upper right square * number of agents in the given square."""
 
-    def __init__(self, size, n_agents):
+    def __init__(self, size, n_agents, noise=0.0):
         self.size = size
         self.n_agents = n_agents
         self.agents = [Agent(i, size) for i in range(n_agents)]
-        self.landmark = [size, size] #upper left square
-        self.action_space = 5 #up, down, left, right, stay
-        self.state_space = 2*n_agents
+        self.landmark = [size, size]  # upper left square
+        self.action_space = 5  # up, down, left, right, stay
+        self.state_space = 2 * n_agents
         self.constraint_space = [1 for i in range(n_agents)]
+        self.demand_rate = np.random.rand(size, size)*20 + 5 #range between 5 and 25 people per area per hour
         self.viewer = None
+        assert 0 <= noise <= 1
+        self.noise = noise
 
     def reset(self):
         for agent in self.agents:
@@ -31,7 +41,11 @@ class PotentialGrid(object):
         return state
 
     def transition(self, action):
-        """Transition p(s'|s,a)."""
+        """Transition p(s'|s,a).
+        action = 0,1,2,3 => go right, down, left, up with 90% of probability and in one of the other directions at random with
+        10 % probability
+        action = 5 => wait for a new rider, you can ends up in the same state or one of the neightbouring vertices
+        with equal probability"""
         directions = np.array([[1, -1, 0, 0, 0], [0, 0, -1, 1, 0]])
         states = []
 
@@ -40,22 +54,38 @@ class PotentialGrid(object):
                 states.append(agent.state.copy())
                 continue
             x, y = agent.state
-            dx, dy = directions[:, action[i]]
+            if action[i] < 5:
+                if random() < 1-self.noise:
+                    move = action[i]
+                else:
+                    move = int(random() * 4)
+            else:
+                move = int(random() * 5)
+            dx, dy = directions[:, move]
             x_ = max(0, min(self.size, x + dx))
             y_ = max(0, min(self.size, y + dy))
+            agent.edge = [x,y,x_,y_]
             agent.state = [x_, y_]
             states.append(agent.state.copy())
         return states
 
-
-    def reward(self):
+    def reward(self, action):
         """distance from goal * n of agents in the same square"""
-        col = self._collisions()
-        rew = self._agents_landmark_distances()
-        rew = [-r*(c+1) for r,c in zip(rew,col)]
-        return rew
+        congestions = self._congestions(action)
+        reward = []
+
+        for act, con, agent in zip(action, congestions, self.agents):
+            if act < 5:
+                rew = - AVERAGE_RIDE_COST - con*CONGESTION_COST
+            else:
+                rew = AVERAGE_RIDE_COMPENSATION*con/self.demand_rate[int(agent.state[0]), int(agent.state[1])] + \
+                    AVERAGE_RIDE_COMPENSATION - AVERAGE_RIDE_COST
+            reward.append(rew)
+
+        return reward
 
     def constraint(self, action):
+        """
         travelled_distance = [1, 1, 1, 1, 0]
         con = []
         for a, agent in zip(action, self.agents):
@@ -63,27 +93,44 @@ class PotentialGrid(object):
                 con.append(0)
             else:
                 con.append(travelled_distance[a])
-        return con
+        """
+        return [0 for _ in range(self.n_agents)]
 
     def check_done(self):
-        done = []
-        for agent in self.agents:
-            if agent.done:
-                done.append(True)
-                continue
-            if np.all(np.array(agent.state) - np.array(self.landmark) == 0):
-                agent.done = True
-                done.append(True)
-            if not agent.done:
-                done.append(False)
-        return done
+        return [False for _ in range(self.n_agents)]
 
     def step(self, action):
         state = self.transition(action)
-        reward = self.reward()
+        reward = self.reward(action)
         constraint = self.constraint(action)
         done = self.check_done()
         return state, reward, constraint, done
+
+    def _congestions(self, action):
+        congestions = [0 for _ in range(self.n_agents)]
+
+        for i, agent in enumerate(self.agents):
+            if congestions[i]: #if already checked congestions for that edge continue
+                continue
+            if action[i] < 5:
+                edge = agent.edge
+                agents_sharing_edge = [i]
+                for j, agent2 in enumerate(self.agents[i+1:]):
+                    if action[i+j+1] < 5:
+                        if agent2.edge == edge:
+                            agents_sharing_edge.append(j+i+1)
+                for a in agents_sharing_edge:
+                    congestions[a] = len(agents_sharing_edge) - 1
+            else:
+                state = agent.edge[:2]
+                agents_sharing_state = [i]
+                for j, agent2 in enumerate(self.agents[i+1:]):
+                    if action[i+j+1] == 5:
+                        if agent2.edge[:2] == state:
+                            agents_sharing_state.append(j+i+1)
+                for a in agents_sharing_state:
+                    congestions[a] = len(agents_sharing_state) - 1
+        return congestions
 
     def _collisions(self):
         states = [agent.state for agent in self.agents]
@@ -99,15 +146,8 @@ class PotentialGrid(object):
                 n_collisions.append(np.sum(agent_dist == 0) - 1)
         return n_collisions
 
-    def _agents_landmark_distances(self):
-        states = [agent.state for agent in self.agents]
-        dist = []
-        for s in states:
-            dist.append(np.linalg.norm(np.array(s)-self.landmark, ord=1))
-        return dist
-
     def normalize_state(self, states):
-        return [[s/self.size for s in state] for state in states]
+        return [[s / self.size for s in state] for state in states]
 
     def _coupleToInt(self, x, y):
         return y + x * self.size
@@ -128,7 +168,7 @@ class PotentialGrid(object):
 
         # Draw the grid
         epsilon = 0.5
-        unit = 1 - 2 * epsilon / size
+        unit = 1 - 2 * epsilon / self.size
         for i in range(self.size+1):
             value = unit*i + epsilon
 
@@ -160,26 +200,28 @@ class Agent(object):
         self.start = self.reset()
         self.state = self.start.copy()
         self.done = False
+        self.edge = [0,0,0,0] #indicates the edge that the agent is traversing in the current time step (the coordinates of the 2 vertices)
 
     def reset(self):
         """
         Start from the bottom left square
         """
-        return [0,0]
+        return np.floor(np.random.rand(2)*self.env_size).tolist()
+
 
 if __name__ == '__main__':
-    size = 3
-    n_agents = 5
+    size = 2
+    n_agents = 4
 
-    env = PotentialGrid(size, n_agents)
+    env = Congestion(size, n_agents)
 
     state = env.reset()
 
     env.render()
 
     for i in range(100):
-        action = [int(random()*5) for agent in range(n_agents)]
+        action = [int(random() * 5) for agent in range(n_agents)]
         state, reward, constraint, done = env.step(action)
-        print(state)
+        print(state, constraint, reward)
 
         env.render()

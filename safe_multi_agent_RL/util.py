@@ -1,7 +1,7 @@
 from multiagent_envs.explore import ExploreContinuous, ExploreDiscrete
 from multiagent_envs.grid import Grid
 from multiagent_envs.potential_grid import PotentialGrid
-
+from multiagent_envs.congestion import Congestion
 
 def make_env(params):
     continuous = False
@@ -14,6 +14,8 @@ def make_env(params):
         return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
     elif params.environment == "PotentialGrid":
         return PotentialGrid(params.size, params.n_agents), continuous
+    elif params.environment == "Congestion":
+        return Congestion(params.size, params.n_agents), continuous
     else:
         print("Error: params.env need to be either ExploreDiscrete, ExploreContinuous or Grid")
         exit(1)
