@@ -46,9 +46,9 @@ if __name__ == '__main__':
                         modified_reward = meta_agent.act(constraint, reward)
                     else:
                         modified_reward = reward
-                    if agents_learning_cycle > 0 and batch%100 == 0:
-                        env.render()
-                        time.sleep(0.1)
+                    #if agents_learning_cycle > 0 and batch%100 == 0:
+                    #    env.render()
+                    #    time.sleep(0.1)
 
                     for agent, log_prob, rew, constr in zip(agents, log_probs, modified_reward, constraint):
                         agent.append(log_prob, rew)

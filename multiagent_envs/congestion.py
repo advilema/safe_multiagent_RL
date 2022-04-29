@@ -4,13 +4,15 @@ from scipy.spatial import distance_matrix
 from random import random
 
 
-HOURLY_COMPENSATION = 30 #30 euro per hour
+HOURLY_COMPENSATION = 30.0 #30 euro per hour
 AVERAGE_RIDE_COMPENSATION = 7.5
-AVERAGE_RIDE_COST = 4
-CONGESTION_COST = 2
+AVERAGE_RIDE_COST = 4.0
+CONGESTION_COST = 2.0
 
 
 class Congestion(object):
+    # TODO implement random initialization for the agents at the beginning of each episode
+    # TODO add the noise
     """This class implements a potential grid MDP.
     In the potential grid, all the agents start in the bottom left corner of the grid. Each square in the grid,
     has a score which is minus the L1 distance to the upper right square * number of agents in the given square."""
@@ -23,7 +25,7 @@ class Congestion(object):
         self.action_space = 5  # up, down, left, right, stay
         self.state_space = 2 * n_agents
         self.constraint_space = [1 for i in range(n_agents)]
-        self.demand_rate = np.random.rand(size, size)*20 + 5 #range between 5 and 25 people per area per hour
+        self.demand_rate = np.random.rand(size+1, size+1)*20 + 5 #range between 5 and 25 people per area per hour
         self.viewer = None
         assert 0 <= noise <= 1
         self.noise = noise
@@ -36,7 +38,7 @@ class Congestion(object):
     def _restart(self):
         state = []
         for agent in self.agents:
-            agent.state = agent.start
+            agent.state = agent.reset()
             state.append(agent.state.copy())
         return state
 
@@ -54,7 +56,7 @@ class Congestion(object):
                 states.append(agent.state.copy())
                 continue
             x, y = agent.state
-            if action[i] < 5:
+            if action[i] < 4:
                 if random() < 1-self.noise:
                     move = action[i]
                 else:
@@ -75,13 +77,12 @@ class Congestion(object):
         reward = []
 
         for act, con, agent in zip(action, congestions, self.agents):
-            if act < 5:
+            if act < 4:
                 rew = - AVERAGE_RIDE_COST - con*CONGESTION_COST
             else:
-                rew = AVERAGE_RIDE_COMPENSATION*con/self.demand_rate[int(agent.state[0]), int(agent.state[1])] + \
+                rew = AVERAGE_RIDE_COMPENSATION*(con+1)/self.demand_rate[int(agent.state[0]), int(agent.state[1])] + \
                     AVERAGE_RIDE_COMPENSATION - AVERAGE_RIDE_COST
             reward.append(rew)
-
         return reward
 
     def constraint(self, action):
@@ -112,7 +113,7 @@ class Congestion(object):
         for i, agent in enumerate(self.agents):
             if congestions[i]: #if already checked congestions for that edge continue
                 continue
-            if action[i] < 5:
+            if action[i] < 4:
                 edge = agent.edge
                 agents_sharing_edge = [i]
                 for j, agent2 in enumerate(self.agents[i+1:]):
