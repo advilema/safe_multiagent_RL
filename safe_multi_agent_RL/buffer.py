@@ -70,7 +70,7 @@ class Buffer:
         plt.figure()
         for ag in range(np.array(batch_scores).shape[1]):
             plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[ag])
-        plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
+        #plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
         plt.ylabel('Score')
         plt.xlabel('Episode #')
         plt.savefig(self.save_path + '/scores' + '.png')
@@ -83,7 +83,7 @@ class Buffer:
         plt.figure()
         [plt.plot(np.arange(1, n_batches, self.params.batch_size), constr, label='agent ' + str(agent))
          for agent, constr in enumerate(batch_constraints.T)]
-        plt.plot([1, n_batches], [0, 0], 'r')  # below this line the constraints are satisfied
+        #plt.plot([1, n_batches], [0, 0], 'r')  # below this line the constraints are satisfied
         #plt.plot([1, n_batches], [maximum_constr, maximum_constr], color='black')
         #plt.plot([1, n_batches], [minimum_constr, minimum_constr], color='black')
         plt.ylabel('Constraints')
@@ -124,7 +124,7 @@ class Buffer:
                 plt.figure()
                 plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent], label='original')
                 plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_modified_scores).T[agent], label='modified')
-                plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
+                #plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
                 plt.ylabel('Score')
                 plt.xlabel('Episode #')
                 plt.legend()

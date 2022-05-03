@@ -50,7 +50,7 @@ if __name__ == '__main__':
                     #    env.render()
                     #    time.sleep(0.1)
 
-                    for agent, log_prob, rew, constr in zip(agents, log_probs, modified_reward, constraint):
+                    for agent, log_prob, rew in zip(agents, log_probs, modified_reward):
                         agent.append(log_prob, rew)
                     buffer.append(reward, modified_reward, constraint)
 

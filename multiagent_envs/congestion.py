@@ -11,20 +11,19 @@ CONGESTION_COST = 2.0
 
 
 class Congestion(object):
-    # TODO implement random initialization for the agents at the beginning of each episode
     # TODO add the noise
     """This class implements a potential grid MDP.
     In the potential grid, all the agents start in the bottom left corner of the grid. Each square in the grid,
     has a score which is minus the L1 distance to the upper right square * number of agents in the given square."""
 
-    def __init__(self, size, n_agents, noise=0.0):
+    def __init__(self, size, n_agents, noise=0.1):
         self.size = size
         self.n_agents = n_agents
         self.agents = [Agent(i, size) for i in range(n_agents)]
         self.landmark = [size, size]  # upper left square
         self.action_space = 5  # up, down, left, right, stay
         self.state_space = 2 * n_agents
-        self.constraint_space = [1 for i in range(n_agents)]
+        self.constraint_space = [1]
         self.demand_rate = np.random.rand(size+1, size+1)*20 + 5 #range between 5 and 25 people per area per hour
         self.viewer = None
         assert 0 <= noise <= 1
@@ -85,17 +84,15 @@ class Congestion(object):
             reward.append(rew)
         return reward
 
+    #requires one third of the agents to be in node (0,0)
     def constraint(self, action):
-        """
-        travelled_distance = [1, 1, 1, 1, 0]
-        con = []
-        for a, agent in zip(action, self.agents):
-            if agent.done:
-                con.append(0)
-            else:
-                con.append(travelled_distance[a])
-        """
-        return [0 for _ in range(self.n_agents)]
+        min_agents_in_node = self.n_agents//3
+        agents_in_node = 0
+        for agent in self.agents:
+            if agent.state == [0,0]:
+                agents_in_node += 1
+        return [max(0, min_agents_in_node - agents_in_node)]
+        #return [0 for agent in range(self.n_agents)]
 
     def check_done(self):
         return [False for _ in range(self.n_agents)]
