@@ -9,7 +9,7 @@ class MetaAgent:
         self.leq = leq  # constraints lower equal (<=) thresholds
         self.batch_constraints = []
         self.constraint_values = []
-        self.lambdas = np.zeros(sum(constraint_space))
+        self.lambdas = np.ones(sum(constraint_space))
         self.lr = lr
         self.learning_cycle = 0
         self.start_learning_cycle = start_learning_cycle

@@ -16,7 +16,7 @@ class Congestion(object):
     In the potential grid, all the agents start in the bottom left corner of the grid. Each square in the grid,
     has a score which is minus the L1 distance to the upper right square * number of agents in the given square."""
 
-    def __init__(self, size, n_agents, noise=0.1):
+    def __init__(self, size, n_agents, noise=0.0):
         self.size = size
         self.n_agents = n_agents
         self.agents = [Agent(i, size) for i in range(n_agents)]
@@ -24,7 +24,7 @@ class Congestion(object):
         self.action_space = 5  # up, down, left, right, stay
         self.state_space = 2 * n_agents
         self.constraint_space = [1]
-        self.demand_rate = np.random.rand(size+1, size+1)*20 + 5 #range between 5 and 25 people per area per hour
+        self.demand_rate = np.random.rand(size+1, size+1)*8 + 2 #range between 2 and 10 people per area per hour
         self.viewer = None
         assert 0 <= noise <= 1
         self.noise = noise
@@ -55,13 +55,12 @@ class Congestion(object):
                 states.append(agent.state.copy())
                 continue
             x, y = agent.state
-            if action[i] < 4:
-                if random() < 1-self.noise:
-                    move = action[i]
-                else:
-                    move = int(random() * 4)
+
+            if random() < 1 - self.noise:
+                move = action[i]
             else:
                 move = int(random() * 5)
+
             dx, dy = directions[:, move]
             x_ = max(0, min(self.size, x + dx))
             y_ = max(0, min(self.size, y + dy))
@@ -79,8 +78,9 @@ class Congestion(object):
             if act < 4:
                 rew = - AVERAGE_RIDE_COST - con*CONGESTION_COST
             else:
-                rew = AVERAGE_RIDE_COMPENSATION*(con+1)/self.demand_rate[int(agent.state[0]), int(agent.state[1])] + \
+                rew = - HOURLY_COMPENSATION*(con+1)/self.demand_rate[int(agent.state[0]), int(agent.state[1])] + \
                     AVERAGE_RIDE_COMPENSATION - AVERAGE_RIDE_COST
+
             reward.append(rew)
         return reward
 
@@ -91,7 +91,8 @@ class Congestion(object):
         for agent in self.agents:
             if agent.state == [0,0]:
                 agents_in_node += 1
-        return [max(0, min_agents_in_node - agents_in_node)]
+        constr = [max(0, min_agents_in_node - agents_in_node)]
+        return constr
         #return [0 for agent in range(self.n_agents)]
 
     def check_done(self):

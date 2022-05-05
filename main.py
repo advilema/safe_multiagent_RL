@@ -50,6 +50,10 @@ if __name__ == '__main__':
                     #    env.render()
                     #    time.sleep(0.1)
 
+                    #if agents_learning_cycle > 0 and batch%100 == 0:
+                    #    print(actions)
+                    #    print(reward)
+
                     for agent, log_prob, rew in zip(agents, log_probs, modified_reward):
                         agent.append(log_prob, rew)
                     buffer.append(reward, modified_reward, constraint)
