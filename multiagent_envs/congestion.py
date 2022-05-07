@@ -1,5 +1,5 @@
 import numpy as np
-from gym.envs.classic_control import rendering
+#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
@@ -159,6 +159,8 @@ class Congestion(object):
     def _intToCouple(self, n):
         return int(np.floor(n / self.size)), int(n % self.size)
 
+
+"""
     def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
@@ -194,7 +196,7 @@ class Congestion(object):
             agents_render.append(agent_render)
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
+"""
 
 class Agent(object):
 
@@ -223,11 +225,11 @@ if __name__ == '__main__':
 
     state = env.reset()
 
-    env.render()
+    #env.render()
 
     for i in range(100):
         action = [int(random() * 5) for agent in range(n_agents)]
         state, reward, constraint, done = env.step(action)
         print(state, constraint, reward)
 
-        env.render()
+        #env.render()

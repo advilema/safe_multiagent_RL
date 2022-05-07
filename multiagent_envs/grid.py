@@ -1,5 +1,5 @@
 import numpy as np
-from gym.envs.classic_control import rendering
+#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
@@ -160,6 +160,8 @@ class Grid(object):
     def _intToCouple(self, n):
         return int(np.floor(n / self.size)), int(n % self.size)
 
+
+"""
     def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
@@ -195,7 +197,7 @@ class Grid(object):
             landmarks_render.append(landmark_render)
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
+"""
 
 class Agent(object):
 
@@ -218,7 +220,7 @@ if __name__ == '__main__':
 
     state = env.reset()
 
-    env.render()
+    #env.render()
 
     for i in range(100):
         action = [[random() for j in range(5)] for agent in range(n_agents)]
@@ -226,4 +228,4 @@ if __name__ == '__main__':
         state, reward, constraint, done = env.step(action)
         print(state)
 
-        env.render()
+        #env.render()

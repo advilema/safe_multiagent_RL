@@ -1,5 +1,5 @@
 import numpy as np
-from gym.envs.classic_control import rendering
+#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 import time
@@ -115,6 +115,7 @@ class ExploreContinuous(object):
     def _intToCouple(self, n):
         return int(np.floor(n / self.size)), int(n % self.size)
 
+"""
     def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
@@ -150,10 +151,9 @@ class ExploreContinuous(object):
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
 
-
     def make_colours(self):
         return np.random.rand(self.n_agents, 3).tolist()
-
+"""
 
 
 class ExploreDiscrete(ExploreContinuous):
@@ -188,6 +188,7 @@ class ExploreDiscrete(ExploreContinuous):
             con.append(travelled_distance[a])
         return con
 
+"""
     def render(self, mode='human', close=False):
         super().render(mode='human', close=False)
         # Draw the grid
@@ -196,7 +197,7 @@ class ExploreDiscrete(ExploreContinuous):
             self.viewer.draw_line((i, 0), (i, self.size))
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
+"""
 
 
 class Agent(object):
@@ -225,11 +226,11 @@ if __name__ == '__main__':
 
     state = env.reset()
 
-    env.render()
+    #env.render()
 
     for i in range(100):
         action = [[random() for j in range(env.action_space)] for k in range(n_agents)]
         state, reward, constraint, done = env.step(action)
 
-        env.render()
+        #env.render()
         #time.sleep(100)

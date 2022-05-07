@@ -47,7 +47,7 @@ if __name__ == '__main__':
                     else:
                         modified_reward = reward
                     if params.render and agents_learning_cycle > 0 and batch%100 == 0:
-                        env.render()
+                        #env.render()
                         time.sleep(0.1)
 
                     #if agents_learning_cycle > 0 and batch%100 == 0:
