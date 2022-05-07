@@ -15,7 +15,7 @@ def make_env(params):
     elif params.environment == "PotentialGrid":
         return PotentialGrid(params.size, params.n_agents), continuous
     elif params.environment == "Congestion":
-        return Congestion(params.size, params.n_agents), continuous
+        return Congestion(params.size, params.n_agents, noise=params.noise, shuffle=params.shuffle), continuous
     else:
         print("Error: params.env need to be either ExploreDiscrete, ExploreContinuous or Grid")
         exit(1)

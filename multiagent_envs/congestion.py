@@ -16,7 +16,7 @@ class Congestion(object):
     In the potential grid, all the agents start in the bottom left corner of the grid. Each square in the grid,
     has a score which is minus the L1 distance to the upper right square * number of agents in the given square."""
 
-    def __init__(self, size, n_agents, noise=0.0):
+    def __init__(self, size, n_agents, noise=0.1, shuffle=False):
         self.size = size
         self.n_agents = n_agents
         self.agents = [Agent(i, size) for i in range(n_agents)]
@@ -24,10 +24,12 @@ class Congestion(object):
         self.action_space = 5  # up, down, left, right, stay
         self.state_space = 2 * n_agents
         self.constraint_space = [1]
-        self.demand_rate = np.random.rand(size+1, size+1)*8 + 2 #range between 2 and 10 people per area per hour
+        #self.demand_rate = np.random.rand(size+1, size+1)*8 + 2 #range between 2 and 10 people per area per hour
+        self.demand_rate = np.array([[2,2,4,4],[3,6,10,5],[3,8,3,4],[4,6,7,8]])
         self.viewer = None
         assert 0 <= noise <= 1
         self.noise = noise
+        self.shuffle = shuffle
 
     def reset(self):
         for agent in self.agents:
@@ -37,7 +39,10 @@ class Congestion(object):
     def _restart(self):
         state = []
         for agent in self.agents:
-            agent.state = agent.reset()
+            if self.shuffle:
+                agent.state = agent.reset()
+            else:
+                agent.state = agent.start
             state.append(agent.state.copy())
         return state
 
@@ -205,6 +210,8 @@ class Agent(object):
         """
         Start from the bottom left square
         """
+        if self.index == 0:
+            return np.array([0,0])
         return np.floor(np.random.rand(2)*self.env_size).tolist()
 
 

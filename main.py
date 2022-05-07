@@ -46,9 +46,9 @@ if __name__ == '__main__':
                         modified_reward = meta_agent.act(constraint, reward)
                     else:
                         modified_reward = reward
-                    #if agents_learning_cycle > 0 and batch%100 == 0:
-                    #    env.render()
-                    #    time.sleep(0.1)
+                    if params.render and agents_learning_cycle > 0 and batch%100 == 0:
+                        env.render()
+                        time.sleep(0.1)
 
                     #if agents_learning_cycle > 0 and batch%100 == 0:
                     #    print(actions)
@@ -74,5 +74,5 @@ if __name__ == '__main__':
             print('Lambdas: {}'.format(meta_agent.lambdas))
             buffer.append_lambdas(meta_agent.lambdas)
 
-        if meta_agent_learning_cycle % 5 == 0:
+        if meta_agent_learning_cycle % 20 == 0:
             buffer.save_results()
