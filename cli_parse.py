@@ -23,5 +23,6 @@ def cli():
     parser.add_argument('--shuffle', action='store_true')
     parser.add_argument('--print_every', type=int, default=1)
     parser.add_argument('--render', action='store_true')
+    parser.add_argument('--checkpoints', action='store_true')
     params = parser.parse_args()
     return params

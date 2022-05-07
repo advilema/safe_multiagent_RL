@@ -74,5 +74,8 @@ if __name__ == '__main__':
             print('Lambdas: {}'.format(meta_agent.lambdas))
             buffer.append_lambdas(meta_agent.lambdas)
 
-        if meta_agent_learning_cycle % 20 == 0:
+        if params.checkpoints and meta_agent_learning_cycle % 100 == 0:
             buffer.save_results()
+
+    buffer.save_results()
+
