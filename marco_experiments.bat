@@ -1,20 +1,20 @@
-python main.py --numpy_seed 0 --torch_seed 0 --unconstrained
-python main.py --numpy_seed 1 --torch_seed 1 --unconstrained
-python main.py --numpy_seed 2 --torch_seed 2 --unconstrained
-python main.py --numpy_seed 3 --torch_seed 3 --unconstrained
-python main.py --numpy_seed 4 --torch_seed 4 --unconstrained
-python main.py --numpy_seed 5 --torch_seed 5 --unconstrained
-python main.py --numpy_seed 6 --torch_seed 6 --unconstrained
-python main.py --numpy_seed 7 --torch_seed 7 --unconstrained
-python main.py --numpy_seed 8 --torch_seed 8 --unconstrained
-python main.py --numpy_seed 9 --torch_seed 9 --unconstrained
-python main.py --numpy_seed 10 --torch_seed 10 --unconstrained
-python main.py --numpy_seed 11 --torch_seed 11 --unconstrained
-python main.py --numpy_seed 12 --torch_seed 12 --unconstrained
-python main.py --numpy_seed 13 --torch_seed 13 --unconstrained
-python main.py --numpy_seed 14 --torch_seed 14 --unconstrained
-python main.py --numpy_seed 15 --torch_seed 15 --unconstrained
-python main.py --numpy_seed 16 --torch_seed 16 --unconstrained
-python main.py --numpy_seed 17 --torch_seed 17 --unconstrained
-python main.py --numpy_seed 18 --torch_seed 18 --unconstrained
-python main.py --numpy_seed 19 --torch_seed 19 --unconstrained
+python main.py --numpy_seed 20 --torch_seed 20 --unconstrained --checkpoints
+python main.py --numpy_seed 21 --torch_seed 21 --unconstrained --checkpoints
+python main.py --numpy_seed 22 --torch_seed 22 --unconstrained --checkpoints
+python main.py --numpy_seed 23 --torch_seed 23 --unconstrained --checkpoints
+python main.py --numpy_seed 24 --torch_seed 24 --unconstrained --checkpoints
+python main.py --numpy_seed 25 --torch_seed 25 --unconstrained
+python main.py --numpy_seed 26 --torch_seed 26 --unconstrained
+python main.py --numpy_seed 27 --torch_seed 27 --unconstrained
+python main.py --numpy_seed 28 --torch_seed 28 --unconstrained
+python main.py --numpy_seed 29 --torch_seed 29 --unconstrained
+python main.py --numpy_seed 30 --torch_seed 30 --unconstrained
+python main.py --numpy_seed 31 --torch_seed 31 --unconstrained
+python main.py --numpy_seed 32 --torch_seed 32 --unconstrained
+python main.py --numpy_seed 33 --torch_seed 33 --unconstrained
+python main.py --numpy_seed 34 --torch_seed 34 --unconstrained
+python main.py --numpy_seed 35 --torch_seed 35 --unconstrained
+python main.py --numpy_seed 36 --torch_seed 36 --unconstrained
+python main.py --numpy_seed 37 --torch_seed 37 --unconstrained
+python main.py --numpy_seed 38 --torch_seed 38 --unconstrained
+python main.py --numpy_seed 39 --torch_seed 39 --unconstrained
