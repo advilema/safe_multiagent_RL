@@ -1,3 +1,7 @@
+log in
+ssh mmagno@euler.ch
+
+
 Load python and compyler, install repo and set up virtual env:
 module load gcc/6.3.0 python/3.8.5
 python -m venv --system-site-packages myenv

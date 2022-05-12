@@ -2,14 +2,14 @@ import numpy as np
 
 
 class MetaAgent:
-    def __init__(self, constraint_space, gamma, lr, thresholds, leq=True, start_learning_cycle=10, decay=1.0):
+    def __init__(self, constraint_space, gamma, lr, thresholds, leq=True, start_learning_cycle=10, decay=1.0, lambda_0=0):
         self.constraint_space = constraint_space
         self.gamma = gamma
         self.thresholds = np.array(thresholds)
         self.leq = leq  # constraints lower equal (<=) thresholds
         self.batch_constraints = []
         self.constraint_values = []
-        self.lambdas = np.ones(sum(constraint_space))
+        self.lambdas = np.ones(sum(constraint_space))*lambda_0
         self.lr = lr
         self.learning_cycle = 0
         self.start_learning_cycle = start_learning_cycle
@@ -25,9 +25,7 @@ class MetaAgent:
     def step(self):
         if not len(self.batch_constraints):
             return
-        discounts = [self.gamma ** i for i in range(len(self.batch_constraints) + 1)]
-        batch_constraint_values = [sum([a * b for a, b in zip(discounts, constr)])
-                                   for constr in np.array(self.batch_constraints).T]
+        batch_constraint_values = [sum([c for c in constr]) for constr in np.array(self.batch_constraints).T]
         self.constraint_values.append(batch_constraint_values)
         self.batch_constraints = []
 

@@ -13,7 +13,7 @@ class ExploreContinuous(object):
         self.n_agents = n_agents
         self.agents_size = agents_size
         if fieldview_size is None:
-            self.fieldview_size = size / (2*np.sqrt(n_agents))
+            self.fieldview_size = size / (np.sqrt(n_agents))
         else:
             self.fieldview_size = fieldview_size
         self.agents = [Agent(i, size, continuous=True) for i in range(n_agents)]

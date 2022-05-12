@@ -6,20 +6,21 @@ from random import random
 class Space(object):
     """This class implements a grid MDP."""
 
-    def __init__(self, size, n_agents, n_landmarks, shuffle=True, agents_size = 0.5):
+    def __init__(self, size, n_agents, n_landmarks=None, shuffle=True, agents_size = 0.5):
         self.size = size
         self.n_agents = n_agents
         self.agents_size = agents_size
         self.agents = [Agent(i, size) for i in range(n_agents)]
-        self.n_landmarks = n_landmarks
+        self.n_landmarks = n_landmarks if n_landmarks is not None else 1
         self.start_landmarks = [(np.random.rand(2)*size).tolist() for _ in range(n_landmarks)]
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
-        self.action_space = 5 #up, down, left, right, stay
+        self.action_space = 2  # (up, down), (left, right)
         self.state_space = 2*n_agents #TODO: creare array con specifica space size per ogni agente
         if self.shuffle:
             self.state_space += 2*self.n_landmarks #2D position of one agent + 2D position of the landmarks
         self.viewer = None
+        self.constraint_space = [1]
 
     def reset(self):
         if self.shuffle:
@@ -52,35 +53,33 @@ class Space(object):
 
     def transition(self, action):
         """Transition p(s'|s,a)."""
-        directions = np.array([[1, -1, 0, 0, 0], [0, 0, -1, 1, 0]])
         states = []
 
-        for i, agent in enumerate(self.agents):
+        for agent, a in zip(self.agents, action):
+            if agent.done:
+                states.append(agent.state.copy())
+                continue
             x, y = agent.state
-            #dx = np.sum(directions[0]*action[i])
-            #dy = np.sum(directions[1]*action[i])
-            dx, dy = directions[:, action[i]]
+            dx, dy = np.squeeze(a)
             x_ = max(0, min(self.size - 1, x + dx))
             y_ = max(0, min(self.size - 1, y + dy))
             agent.state = [x_, y_]
             states.append(agent.state.copy())
         return states
 
-
     def reward(self):
         """Reward depends on the color of the state"""
-        rew = 0
-
-        rew -= self.size * self._collisions()
-        rew -= self._agents_landmarks_distances()
+        rew = - self._agents_landmarks_distances()
         return [rew for i in range(self.n_agents)]
 
-    def constraint(self, action):
+    def constraint(self):
+        """
         directions = np.array([[1, -1, 0, 0, 0], [0, 0, -1, 1, 0]])
         con = []
         for i in range(self.n_agents):
             con.append(directions*action[i])
-        return con
+        """
+        return self._collisions()
 
     def check_done(self):
         return [False for i in range(self.n_agents)]
@@ -90,35 +89,15 @@ class Space(object):
         if self.shuffle:
             [pos.extend(landmark) for landmark in self.landmarks.copy() for pos in state.copy()]
         reward = self.reward()
-        constraint = self.constraint(action)
+        constraint = self.constraint()
         done = self.check_done()
         #state = self.normalize_state(state)
         return state, reward, constraint, done
 
-    def make_tables(self):
-        """Returns tabular version of reward and transition functions r and p.
-    """
-        r = np.zeros((self.size * self.size, 4))
-        p = np.zeros((self.size * self.size, 4, self.size * self.size))
-        directions = np.array([[1, -1, 0, 0], [0, 0, -1, 1]])
-        for x in range(self.size):
-            for y in range(self.size):
-                for a in range(4):
-                    i = x * self.size + y
-                    r[i, a] = self.reward((x, y))
-                    for d in range(4):
-                        dx, dy = directions[:, d]
-                        x_ = max(0, min(self.size - 1, x + dx))
-                        y_ = max(0, min(self.size - 1, y + dy))
-                        j = x_ * self.size + y_
-                        if self.noise is not None:
-                            p[i, a, j] += 0.3 * self.noise[x, y, a, d] + 0.7 * int(a == d)
-                        else:
-                            p[i, a, j] += int(a == d)
-        return r, p
-
     def _collisions(self):
-        states = [agent.state for agent in self.agents]
+        states = [agent.state for agent in self.agents if not agent.done]
+        if len(states) == 0:
+            return 0
         agent_distances = distance_matrix(states, states)
         n_collisions = np.sum(agent_distances < self.agents_size) - self.n_agents
         return n_collisions
@@ -171,6 +150,7 @@ class Space(object):
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
 """
 
+
 class Agent(object):
 
     def __init__(self, index, size):
@@ -178,6 +158,7 @@ class Agent(object):
         self.env_size = size
         self.start = self.reset()
         self.state = self.start.copy()
+        self.done = False
 
     def reset(self):
         return (np.random.rand(2)*self.env_size).tolist()
@@ -194,9 +175,9 @@ if __name__ == '__main__':
     #env.render()
 
     for i in range(100):
-        action = [[random() for j in range(5)] for agent in range(n_agents)]
+        action = [[random() for j in range(env.action_space)] for k in range(n_agents)]
         #action = [int(random()) for agent in range(n_agents)]
         state, reward, constraint, done = env.step(action)
-        print(state)
+        print(state, reward, constraint, done)
 
         #env.render()

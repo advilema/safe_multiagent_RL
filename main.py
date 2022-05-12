@@ -25,7 +25,7 @@ if __name__ == '__main__':
     agents = [ReinforceAgent(env, params.lr, params.gamma, continuous=continuous) for i in range(params.n_agents)]
     if not params.unconstrained:
         meta_agent = MetaAgent(env.constraint_space, params.gamma, params.meta_lr, params.thresholds,
-                               start_learning_cycle=params.n_agents_learning_cycles-1, decay=params.decay)
+                               start_learning_cycle=params.n_agents_learning_cycles-4, decay=params.decay, lambda_0=params.lambda_0)
     else:
         meta_agent = None
     buffer = Buffer(params, constrained=not params.unconstrained)
