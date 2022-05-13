@@ -1,5 +1,5 @@
 log in
-ssh mmagno@euler.ch
+ssh mmagno@euler.ethz.ch
 
 
 Load python and compyler, install repo and set up virtual env:
@@ -17,7 +17,8 @@ scp -r mmagno@euler.ethz.ch:safe_multiagent_RL/results .
 (instead of mmagno put your username)
 
 Run experiments on Git Bash (submit the job):
-bsub ./marco_experiments.bat
+bsub ./marco_experiments.bat (submit the job)
+bash ./marco_experiments.bat (run from terminal)
 
 Activate virtual environment:
 source myenv/bin/activate
