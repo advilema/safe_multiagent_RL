@@ -22,3 +22,6 @@ bash ./marco_experiments.bat (run from terminal)
 
 Activate virtual environment:
 source myenv/bin/activate
+
+Monitor jobs:
+bjobs (for pending -p)

@@ -1,4 +1,3 @@
-python main.py --numpy_seed 0 --torch_seed 0 --unconstrained
 python main.py --numpy_seed 1 --torch_seed 1 --unconstrained
 python main.py --numpy_seed 2 --torch_seed 2 --unconstrained
 python main.py --numpy_seed 3 --torch_seed 3 --unconstrained
@@ -18,3 +17,4 @@ python main.py --numpy_seed 16 --torch_seed 16 --unconstrained
 python main.py --numpy_seed 17 --torch_seed 17 --unconstrained
 python main.py --numpy_seed 18 --torch_seed 18 --unconstrained
 python main.py --numpy_seed 19 --torch_seed 19 --unconstrained
+python main.py --numpy_seed 20 --torch_seed 20 --unconstrained

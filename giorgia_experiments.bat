@@ -1,4 +1,3 @@
-python main.py --numpy_seed 0 --torch_seed 0
 python main.py --numpy_seed 1 --torch_seed 1
 python main.py --numpy_seed 2 --torch_seed 2
 python main.py --numpy_seed 3 --torch_seed 3
