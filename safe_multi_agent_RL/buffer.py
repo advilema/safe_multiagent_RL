@@ -70,7 +70,6 @@ class Buffer:
         plt.figure()
         for ag in range(np.array(batch_scores).shape[1]):
             plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[ag])
-        #plt.plot([1, n_batches], [0, 0], 'r')  # plot maximum achievable score
         plt.ylabel('Score')
         plt.xlabel('Episode #')
         plt.savefig(self.save_path + '/scores' + '.png')
@@ -78,20 +77,16 @@ class Buffer:
 
         # plot constraints
         batch_constraints = np.array(self._get_batch_constraints())
-        maximum_constr = np.array(self.params.max_t) - np.array(self.params.thresholds)
-        minimum_constr = - np.array(self.params.thresholds)
         plt.figure()
         [plt.plot(np.arange(1, n_batches, self.params.batch_size), constr, label='agent ' + str(agent))
          for agent, constr in enumerate(batch_constraints.T)]
-        #plt.plot([1, n_batches], [0, 0], 'r')  # below this line the constraints are satisfied
-        #plt.plot([1, n_batches], [maximum_constr, maximum_constr], color='black')
-        #plt.plot([1, n_batches], [minimum_constr, minimum_constr], color='black')
         plt.ylabel('Constraints')
         plt.xlabel('Episode #')
         plt.legend()
         plt.savefig(self.save_path + '/constr.png')
         plt.close()
 
+        """
         # plot how much constraints are not respected
         constr_excess = np.maximum(batch_constraints, np.zeros(batch_constraints.shape))
         constr_excess = np.sum(constr_excess, axis=1)
@@ -102,6 +97,7 @@ class Buffer:
         plt.xlabel('Episode #')
         plt.savefig(self.save_path + '/constr_excess.png')
         plt.close()
+        """
 
         """
         #plot constraints regret
@@ -120,6 +116,7 @@ class Buffer:
 
         if self.constrained:
             # plot modified scores
+            """
             for agent in range(self.params.n_agents):
                 plt.figure()
                 plt.plot(np.arange(1, n_batches, self.params.batch_size), np.array(batch_scores).T[agent], label='original')
@@ -130,6 +127,7 @@ class Buffer:
                 plt.legend()
                 plt.savefig(self.save_path + '/modified_scores_agent' + str(agent) + '.png')
                 plt.close()
+            """
 
             # plot lambdas
             plt.figure()
@@ -146,9 +144,9 @@ class Buffer:
             #json.dump(self.params._asdict(), file)
             json.dump(vars(self.params), file)
 
-        np.save(self.save_path + '/constr.npy', self.constraints)
-        np.save(self.save_path + '/scores.npy', self.scores)
-        np.save(self.save_path + '/modified_scores.npy', self.modified_scores)
+        np.save(self.save_path + '/constr' + self.params.numpy_seed + '.npy', self.constraints)
+        np.save(self.save_path + '/scores' + self.params.numpy_seed + '.npy', self.scores)
+        #np.save(self.save_path + '/modified_scores.npy', self.modified_scores)
         if self.constrained:
             np.save(self.save_path + '/lambdas.npy', self.lambdas)
         return
