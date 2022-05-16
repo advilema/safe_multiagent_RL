@@ -1,0 +1,5 @@
+python main.py --numpy_seed 10 --torch_seed 10 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.0015 --thresholds 15 15 15 --environment ExploreContinuous --unconstrained
+python main.py --numpy_seed 11 --torch_seed 11 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.0015 --thresholds 15 15 15 --environment ExploreContinuous --unconstrained
+python main.py --numpy_seed 12 --torch_seed 12 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.0015 --thresholds 15 15 15 --environment ExploreContinuous --unconstrained
+python main.py --numpy_seed 13 --torch_seed 13 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.0015 --thresholds 15 15 15 --environment ExploreContinuous --unconstrained
+python main.py --numpy_seed 14 --torch_seed 14 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.0015 --thresholds 15 15 15 --environment ExploreContinuous --unconstrained
