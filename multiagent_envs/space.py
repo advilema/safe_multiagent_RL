@@ -6,7 +6,7 @@ from random import random
 class Space(object):
     """This class implements a grid MDP."""
 
-    def __init__(self, size, n_agents, n_landmarks=None, shuffle=True, agents_size = 0.5):
+    def __init__(self, size, n_agents, n_landmarks=None, shuffle=True, agents_size=0.5):
         self.size = size
         self.n_agents = n_agents
         self.agents_size = agents_size
@@ -16,13 +16,16 @@ class Space(object):
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
         self.action_space = 2  # (up, down), (left, right)
-        self.state_space = 2*n_agents #TODO: creare array con specifica space size per ogni agente
+        self.state_space = 2*n_agents
         if self.shuffle:
             self.state_space += 2*self.n_landmarks #2D position of one agent + 2D position of the landmarks
+        print(self.state_space)
         self.viewer = None
         self.constraint_space = [1]
 
     def reset(self):
+        for agent in self.agents:
+            agent.done = False
         if self.shuffle:
             return self._reset()
         else:
@@ -34,7 +37,7 @@ class Space(object):
             agent.state = agent.reset()
             state.append(agent.state.copy())
         #self._reset_landmarks()
-        [pos.extend(landmark) for landmark in self.landmarks for pos in state] #concatenate the state of each agent with the landmarks
+        [state.append(landmark) for landmark in self.landmarks] #concatenate the state of each agent with the landmarks
         #state = self.normalize_state(state)
         return state
 
@@ -65,6 +68,10 @@ class Space(object):
             y_ = max(0, min(self.size - 1, y + dy))
             agent.state = [x_, y_]
             states.append(agent.state.copy())
+            for land in self.landmarks:
+                if np.linalg.norm(np.array(agent.state) - np.array(land)) < self.agents_size:
+                    print('veroo')
+                    agent.done = True
         return states
 
     def reward(self):
@@ -79,15 +86,15 @@ class Space(object):
         for i in range(self.n_agents):
             con.append(directions*action[i])
         """
-        return self._collisions()
+        return [self._collisions()]
 
     def check_done(self):
-        return [False for i in range(self.n_agents)]
+        return [agent.state for agent in self.agents]
 
     def step(self, action):
         state = self.transition(action)
         if self.shuffle:
-            [pos.extend(landmark) for landmark in self.landmarks.copy() for pos in state.copy()]
+            [state.append(landmark) for landmark in self.landmarks.copy()]
         reward = self.reward()
         constraint = self.constraint()
         done = self.check_done()
