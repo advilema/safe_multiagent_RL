@@ -19,10 +19,10 @@ if __name__ == '__main__':
         for agents_learning_cycle in range(params.n_agents_learning_cycles):
             for batch in range(params.batch_size):
                 state = env.reset()
+                print(batch)
                 for t in range(params.max_t):
                     actions = agents.act(state)
                     next_state, reward, constraint, done = env.step(actions)
-
                     modified_reward = agents.train_model(state, actions, reward, next_state, constraint, done)
                     buffer.append(reward, modified_reward, constraint)
 

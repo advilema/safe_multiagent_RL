@@ -1,4 +1,4 @@
-from multiagent_envs.explore import ExploreContinuous, ExploreDiscrete
+from multiagent_envs.explore import ExploreContinuous, ExploreDiscrete, ExploreDiscretized
 from multiagent_envs.grid import Grid
 from multiagent_envs.potential_grid import PotentialGrid
 from multiagent_envs.congestion import Congestion
@@ -8,9 +8,11 @@ def make_env(params):
     continuous = False
     if params.environment == "ExploreDiscrete":
         return ExploreDiscrete(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
+    elif params.environment == "ExploreDiscretized":
+        return ExploreDiscretized(params.size, params.n_agents, coarseness=params.coarseness, shuffle=params.shuffle, weights=params.weights), continuous
     elif params.environment == "ExploreContinuous":
         continuous = True
-        return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
+        return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights, coarseness=params.coarseness), continuous
     elif params.environment == "Grid":
         return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
     elif params.environment == "Space":

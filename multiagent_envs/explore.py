@@ -8,7 +8,7 @@ import time
 class ExploreContinuous(object):
     """This class implements a grid MDP."""
 
-    def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
+    def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None, coarseness=None):
         self.size = size
         self.n_agents = n_agents
         self.agents_size = agents_size
@@ -23,6 +23,7 @@ class ExploreContinuous(object):
         self.shuffle = shuffle
         self.viewer = None
         self.weights = weights
+        self.coarseness = coarseness
 
     def reset(self):
         for agent in self.agents:
@@ -60,6 +61,12 @@ class ExploreContinuous(object):
                 continue
             x, y = agent.state
             dx, dy = np.squeeze(a)
+            if self.coarseness is not None:
+                norm = dx**2+dy**2
+                max_norm = np.sqrt(2)*self.size/self.coarseness
+                if np.sqrt(norm) > max_norm:
+                    dx = (dx / norm) * max_norm
+                    dy = (dy / norm) * max_norm
             x_ = max(0, min(self.size - 1, x + dx))
             y_ = max(0, min(self.size - 1, y + dy))
             agent.state = [x_, y_]
@@ -200,12 +207,57 @@ class ExploreDiscrete(ExploreContinuous):
 """
 
 
+class ExploreDiscretized(ExploreContinuous):
+    def __init__(self, size, n_agents, coarseness=20, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
+        super().__init__(size, n_agents, shuffle=shuffle, agents_size=agents_size, fieldview_size=fieldview_size,
+                         weights=weights)
+        self.coarseness = coarseness
+        self.agents = [Agent(i, size, coarseness=self.coarseness) for i in range(n_agents)]
+        self.action_space = 9 # up, down, left, right, up-left, up-right, down-left, down-right, stay
+
+    def transition(self, action):
+        """Transition p(s'|s,a)."""
+        directions = np.array([[1, -1, 0, 0, 1, 1, -1, -1, 0], [0, 0, -1, 1, 1, -1, 1, -1, 0]])
+        states = []
+
+        for i, agent in enumerate(self.agents):
+            if agent.done:
+                states.append(agent.state.copy())
+                continue
+            x, y = np.array(agent.state)*self.coarseness
+            dx, dy = directions[:, action[i]]
+            x_ = max(0, min(self.size - 1, x + dx))/self.coarseness
+            y_ = max(0, min(self.size - 1, y + dy))/self.coarseness
+            agent.state = [x_, y_]
+            states.append(agent.state.copy())
+        return states
+
+    def constraint(self, action):
+        travelled_distance = np.array([1, 1, 1, 1, np.sqrt(2), np.sqrt(2), np.sqrt(2), np.sqrt(2),  0])*(self.size/self.coarseness)
+        con = []
+        for a in action:
+            con.append(travelled_distance[a])
+        return con
+
+"""
+    def render(self, mode='human', close=False):
+        super().render(mode='human', close=False)
+        # Draw the grid
+        for i in range(self.size):
+            self.viewer.draw_line((0, i), (self.size, i))
+            self.viewer.draw_line((i, 0), (i, self.size))
+
+        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+"""
+
+
 class Agent(object):
 
-    def __init__(self, index, size, continuous=True):
+    def __init__(self, index, size, coarseness=None, continuous=True):
         self.index = index
         self.env_size = size
         self.continuous = continuous
+        self.coarseness = coarseness
         self.start = self.reset()
         self.state = self.start.copy()
         self.done = False
@@ -213,7 +265,10 @@ class Agent(object):
     def reset(self):
         state = (np.random.rand(2) * self.env_size).tolist()
         if not self.continuous:
-            state = np.floor(state)
+            state = np.floor(state).tolist()
+        if self.coarseness is not None:
+            state = np.floor(np.array(state)*self.coarseness)/self.coarseness
+            state = state.tolist()
         return state
 
 
