@@ -15,10 +15,10 @@ class A2CAgents:
         self.actor_lr = params.lr
         self.critic_lr = params.lr
         self.gamma = params.gamma
-        self.threshold = params.thresholds
+        self.threshold = np.array(params.thresholds)
         self.batch_size = params.batch_size
         self.max_t = params.max_t
-        self.lam = 0
+        self.lam = np.zeros(sum(env.constraint_space))
         self.actors = [self.build_actor() for _ in range(self.n_agents)]
         self.critic = self.build_critic()
         self.meta_critic = self.build_meta_critic()
@@ -39,7 +39,7 @@ class A2CAgents:
         critic = Sequential()
         critic.add(Dense(24, input_dim=self.state_size, activation='relu',
                          kernel_initializer='he_uniform'))
-        critic.add(Dense(1, activation='linear',
+        critic.add(Dense(self.value_size, activation='linear',
                          kernel_initializer='he_uniform'))
         critic.compile(loss="mse", optimizer=Adam(lr=self.critic_lr))
         return critic
@@ -55,6 +55,7 @@ class A2CAgents:
 
     def act(self, state):
         actions = []
+        state = np.array(state).reshape(1, self.state_size)
         for actor in self.actors:
             if self.continuous:
                 pred = actor.predict(state, batch_size=1).flatten()
@@ -69,6 +70,9 @@ class A2CAgents:
 
     def train_model(self, state, action, reward, next_state, constr, done):
 
+        state = np.array(state).reshape(1, self.state_size)
+        next_state = np.array(next_state).reshape(1, self.state_size)
+
         target = np.zeros((self.n_agents, self.value_size))
         advantages = np.zeros((self.n_agents, self.action_size))
         meta_target = np.zeros((self.n_agents, self.value_size))
@@ -81,7 +85,7 @@ class A2CAgents:
 
         if done:
             for agent_idx, a in zip(range(self.n_agents), action):
-                advantages[agent_idx][action] = -1 * (reward - value)
+                advantages[agent_idx][a] = -1 * (reward - value)
             target[0][0] = reward
             meta_target[0][0] = constr
         else:
