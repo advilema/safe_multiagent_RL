@@ -1,5 +1,10 @@
 import numpy as np
 import torch
+import os
+import sys
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
 from safe_multi_agent_RL.buffer import Buffer
 from safe_multi_agent_RL.util import make_env, print_info
 from cli_parse import cli
@@ -33,9 +38,9 @@ if __name__ == '__main__':
                     state = next_state
 
                 buffer.step()
-                #[agent.step() for agent in agents] #TODO: understand agent.step()
+                #[agent.step() for agent in agents]
 
-            #[agent.update() for agent in agents] #TODO: understand agent.update()
+            #[agent.update() for agent in agents]
             if agents_learning_cycle % params.print_every == 0:
                 print_info(buffer, agents_learning_cycle, meta_agent_learning_cycle)
 
