@@ -70,7 +70,6 @@ class Space(object):
             states.append(agent.state.copy())
             for land in self.landmarks:
                 if np.linalg.norm(np.array(agent.state) - np.array(land)) < self.agents_size:
-                    print('veroo')
                     agent.done = True
         return states
 
@@ -80,12 +79,6 @@ class Space(object):
         return [rew for i in range(self.n_agents)]
 
     def constraint(self):
-        """
-        directions = np.array([[1, -1, 0, 0, 0], [0, 0, -1, 1, 0]])
-        con = []
-        for i in range(self.n_agents):
-            con.append(directions*action[i])
-        """
         return [self._collisions()]
 
     def check_done(self):

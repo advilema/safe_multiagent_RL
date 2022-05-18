@@ -4,100 +4,97 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 
 
-class DiscreteActor:
-    def __init__(self, env, hidden_size=16):
-        state_size = env.state_space
-        action_size = env.action_space
-        actor = Sequential()
-        actor.add(Dense(24, input_dim=state_size, activation='relu',
-                        kernel_initializer='he_uniform'))
-        actor.add(Dense(action_size, activation='softmax',
-                        kernel_initializer='he_uniform'))
-        actor.compile(loss='categorical_crossentropy',
-                      optimizer=Adam(lr=actor_lr))
-        self.actor = actor
 
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return F.softmax(x, dim=1)
-
-    def act(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
-        probs = self.forward(state).cpu()
-        m = Categorical(probs)
-        action = m.sample()
-        return action.item(), m.log_prob(action)
-
-
-class ContinuousActor:
-    def __init__(self, env, hidden_size=16,):
-        super(ContinuousPolicy, self).__init__()
-        state_size = env.state_space
-        action_size = env.action_space
-
-        self.fc1 = nn.Linear(state_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, action_size)
-        self.fc2_ = nn.Linear(hidden_size, action_size)
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        mu = self.fc2(x)
-        sigma_sq = self.fc2_(x)
-
-        return mu, sigma_sq
-
-    def act(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
-        mu, sigma_sq = self.forward(state)
-        sigma_sq = F.softplus(sigma_sq)
-
-        eps = torch.randn(mu.size())
-        # calculate the probability
-        action = (mu + sigma_sq.sqrt() * Variable(eps).to(self.device)).data
-        prob = normal(action, mu, sigma_sq)
-
-        log_prob = prob.log()
-        return action.cpu().detach().numpy(), log_prob
-
-
-
-class Agent:
-    def __init__(self, env, lr, gamma, continuous=False, hidden_size=16):
-
-        self.actor_1 = self.build_actor()
-        self.actor_2 = self.build_actor()
+class A2CAgents:
+    def __init__(self, params, env, continuous=False, hidden_size=16):
+        self.state_size = env.state_space
+        self.action_size = env.action_space
+        self.value_size = 1
+        self.n_agents = params.n_agents
+        self.continuous = continuous
+        self.actor_lr = params.lr
+        self.critic_lr = params.lr
+        self.gamma = params.gamma
+        self.threshold = params.thresholds
+        self.batch_size = params.batch_size
+        self.max_t = params.max_t
+        self.lam = 0
+        self.actors = [self.build_actor() for _ in range(self.n_agents)]
         self.critic = self.build_critic()
-        self.critic2 = self.build_critic2()
+        self.meta_critic = self.build_meta_critic()
 
     def build_actor(self):
         actor = Sequential()
         actor.add(Dense(24, input_dim=self.state_size, activation='relu',
                         kernel_initializer='he_uniform'))
-        actor.add(Dense(self.action_size, activation='softmax',
-                        kernel_initializer='he_uniform'))
-        #actor.summary()
-        # See note regarding crossentropy in cartpole_reinforce.py
+        if self.continuous:
+            actor.add(Dense(self.action_size+1, activation='softmax',kernel_initializer='he_uniform'))
+        else:
+            actor.add(Dense(self.action_size, activation='softmax',kernel_initializer='he_uniform'))
         actor.compile(loss='categorical_crossentropy',
                       optimizer=Adam(lr=self.actor_lr))
         return actor
 
     def build_critic(self):
         critic = Sequential()
-        critic.add(Dense(24, input_dim=self.state_size*2, activation='relu',
+        critic.add(Dense(24, input_dim=self.state_size, activation='relu',
                          kernel_initializer='he_uniform'))
-        critic.add(Dense(self.value_size, activation='linear',
+        critic.add(Dense(1, activation='linear',
                          kernel_initializer='he_uniform'))
-        #critic.summary()
         critic.compile(loss="mse", optimizer=Adam(lr=self.critic_lr))
         return critic
 
-    def get_action_1(self, state):
-        policy = self.actor_1.predict(state, batch_size=1).flatten()
-        return np.random.choice(self.action_size, 1, p=policy)[0]
+    def build_meta_critic(self):
+        critic = Sequential()
+        critic.add(Dense(24, input_dim=self.state_size, activation='relu',
+                         kernel_initializer='he_uniform'))
+        critic.add(Dense(1, activation='linear',
+                         kernel_initializer='he_uniform'))
+        critic.compile(loss="mse", optimizer=Adam(lr=self.critic_lr))
+        return critic
 
-    def get_maxaction_2(self,state):
-        policy = self.actor_2.predict(state, batch_size=1).flatten()
-        return np.argmax(policy)
+    def act(self, state):
+        actions = []
+        for actor in self.actors:
+            if self.continuous:
+                pred = actor.predict(state, batch_size=1).flatten()
+                mu = pred[:self.action_size]
+                sigma = pred[self.action_size]
+                action = np.random.normal(mu, sigma, size=2)
+            else:
+                policy = actor.predict(state, batch_size=1).flatten()
+                action = np.random.choice(self.action_size, 1, p=policy)[0]
+            actions.append(action)
+        return actions
 
+    def train_model(self, state, action, reward, next_state, constr, done):
+
+        target = np.zeros((self.n_agents, self.value_size))
+        advantages = np.zeros((self.n_agents, self.action_size))
+        meta_target = np.zeros((self.n_agents, self.value_size))
+
+        value = self.critic.predict(state)[0]
+        next_value = self.critic.predict(next_state)[0]
+        next_meta_value = self.meta_critic.predict(next_state)[0]
+
+        reward = reward + self.lam * (constr - self.threshold/self.max_t) #TODO rendere vettoriale
+
+        if done:
+            for agent_idx, a in zip(range(self.n_agents), action):
+                advantages[agent_idx][action] = -1 * (reward - value)
+            target[0][0] = reward
+            meta_target[0][0] = constr
+        else:
+            for agent_idx, a in zip(range(self.n_agents), action):
+                advantages[agent_idx][a] = -1 * (reward + self.gamma * (next_value) - value)
+            target[0][0] = reward + self.gamma * next_value
+            meta_target[0][0] = constr + self.gamma * next_meta_value
+
+        for actor in zip(self.actors, advantages):
+            actor.fit(state, advantages, epochs=1, verbose=0)
+        self.critic.fit(state, target, epochs=1, verbose=0)
+        self.meta_critic.fit(state, meta_target, epochs=1, verbose=0)
+
+        self.lam = min(max(0, (self.lam + 0.001 * (self.meta_critic.predict(state)[0] - self.threshold/self.max_t))), 5)
+
+        return reward

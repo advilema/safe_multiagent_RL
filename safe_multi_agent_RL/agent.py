@@ -87,6 +87,9 @@ class ReinforceAgent:
         self.policy_losses = []
 
     def act(self, state):
+        """
+        Return an action for the given state according to the policy
+        """
         return self.model.act(state)
 
     def append(self, log_prob, reward):
@@ -94,6 +97,9 @@ class ReinforceAgent:
         self.rewards.append(reward)
 
     def step(self):
+        """
+        compute the policy losses at the end of an episode
+        """
         discounts = [self.gamma ** i for i in range(len(self.rewards) + 1)]
         R = sum([a * b for a, b in zip(discounts, self.rewards)])
         policy_loss = []
@@ -106,6 +112,9 @@ class ReinforceAgent:
         self.log_probs = []
 
     def update(self):
+        """
+        Update the policy depending on the mean of the losses of the episodes in the batch
+        """
         loss = torch.mean((torch.stack(self.policy_losses)))
         self.policy_losses = []
         self.optimizer.zero_grad()

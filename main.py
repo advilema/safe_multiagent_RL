@@ -10,14 +10,6 @@ import time
 
 if __name__ == '__main__':
     params = cli()
-
-    #if args.constrained:
-    #    with open('params.json', 'r') as file:
-    #        params = json.load(file)
-    #else:
-    #    with open('params_unconstrained.json', 'r') as file:
-    #        params = json.load(file)
-    #params = namedtuple("params", params.keys())(*params.values())
     np.random.seed(params.numpy_seed)
     torch.manual_seed(params.torch_seed)
 
@@ -38,32 +30,33 @@ if __name__ == '__main__':
                     log_probs = []
                     actions = []
                     for agent in agents:
-                        action, log_prob = agent.act(np.array(state).flatten())
+                        action, log_prob = agent.act(np.array(state).flatten()) #TODO: add logprob
                         log_probs.append(log_prob)
                         actions.append(action)
-                    state, reward, constraint, _ = env.step(actions)
+                    state, reward, constraint, done = env.step(actions)
                     if not params.unconstrained:
                         modified_reward = meta_agent.act(constraint, reward)
                     else:
                         modified_reward = reward
+
                     if params.render and agents_learning_cycle > 0 and batch%100 == 0:
                         #env.render()
                         time.sleep(0.1)
 
-                    #if agents_learning_cycle > 0 and batch%100 == 0:
-                    #    print(actions)
-                    #    print(reward)
-
                     for agent, log_prob, rew in zip(agents, log_probs, modified_reward):
-                        agent.append(log_prob, rew)
+                        agent.append(log_prob, rew) #TODO: add append
                     buffer.append(reward, modified_reward, constraint)
 
+                    #if all agents are done ends the episode
+                    if np.all(done):
+                        break
+
                 buffer.step()
-                [agent.step() for agent in agents]
+                [agent.step() for agent in agents] #TODO: understand agent.step()
                 if not params.unconstrained:
                     meta_agent.step()
 
-            [agent.update() for agent in agents]
+            [agent.update() for agent in agents] #TODO: understand agent.update()
             if not params.unconstrained:
                 meta_agent.increment_learning_cycle()
             if agents_learning_cycle % params.print_every == 0:
