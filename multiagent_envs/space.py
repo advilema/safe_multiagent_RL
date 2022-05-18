@@ -99,7 +99,7 @@ class Space(object):
         if len(states) == 0:
             return 0
         agent_distances = distance_matrix(states, states)
-        n_collisions = (np.sum(agent_distances < self.agents_size) - self.n_agents)/2
+        n_collisions = (np.sum(agent_distances < 2*self.agents_size) - self.n_agents)/2
         return n_collisions
 
     def _agents_landmarks_distances(self):
