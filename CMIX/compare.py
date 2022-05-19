@@ -43,9 +43,9 @@ if __name__ == '__main__':
     avg_cost = sum(args.thresholds) / (args.max_env_t * args.n_agents)
 
     if args.environment == 'ExploreDiscretized':
-        env = ExploreDiscretized(size, n_agents, args.tau, avg_cost=avg_cost, coarseness=coarseness)
+        env = ExploreDiscretized(size, n_agents, args.tau, avg_cost=avg_cost, coarseness=coarseness, shuffle=args.shuffle)
     elif args.environment == 'Congestion':
-        env = Congestion(size, n_agents, avg_cost=avg_cost, tau=args.tau, shuffle=True)
+        env = Congestion(size, n_agents, avg_cost=avg_cost, tau=args.tau, shuffle=args.shuffle)
     else:
         print('Choose an environment between ExploreDiscretized and Congestion')
     n_agent, state_space, observation_spaces, action_spaces, n_opponent_actions = env.setup() # obses: observation states for the agents; state: the global state for the mixer

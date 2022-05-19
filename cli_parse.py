@@ -6,7 +6,7 @@ def cli():
     parser.add_argument('--unconstrained', action='store_true')
     parser.add_argument('--numpy_seed', type=int, default=0)
     parser.add_argument('--torch_seed', type=int, default=0)
-    parser.add_argument('--environment', type=str, default='Space')
+    parser.add_argument('--environment', type=str, default='ExploreDiscretized')
     parser.add_argument('--n_meta_agent_learning_cycles', type=int, default=40)
     parser.add_argument('--n_agents_learning_cycles', type=int, default=30)
     parser.add_argument('--batch_size', type=int, default=50)

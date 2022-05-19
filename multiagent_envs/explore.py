@@ -62,13 +62,13 @@ class ExploreContinuous(object):
             x, y = agent.state
             dx, dy = np.squeeze(a)
             if self.coarseness is not None:
-                norm = dx**2+dy**2
+                norm = np.sqrt(dx**2+dy**2)
                 max_norm = np.sqrt(2)*self.size/self.coarseness
                 if np.sqrt(norm) > max_norm:
                     dx = (dx / norm) * max_norm
                     dy = (dy / norm) * max_norm
-            x_ = max(0, min(self.size - 1, x + dx))
-            y_ = max(0, min(self.size - 1, y + dy))
+            x_ = max(0, min(self.size, x + dx))
+            y_ = max(0, min(self.size, y + dy))
             agent.state = [x_, y_]
             states.append(agent.state.copy())
         return states
@@ -182,8 +182,8 @@ class ExploreDiscrete(ExploreContinuous):
                 continue
             x, y = agent.state
             dx, dy = directions[:, action[i]]
-            x_ = max(0, min(self.size - 1, x + dx))
-            y_ = max(0, min(self.size - 1, y + dy))
+            x_ = max(0, min(self.size, x + dx))
+            y_ = max(0, min(self.size, y + dy))
             agent.state = [x_, y_]
             states.append(agent.state.copy())
         return states
@@ -212,7 +212,8 @@ class ExploreDiscretized(ExploreContinuous):
         super().__init__(size, n_agents, shuffle=shuffle, agents_size=agents_size, fieldview_size=fieldview_size,
                          weights=weights)
         self.coarseness = coarseness
-        self.agents = [Agent(i, size, coarseness=self.coarseness) for i in range(n_agents)]
+        self.zoom_fac = self.coarseness/self.size
+        self.agents = [Agent(i, size, zoom_fac=self.zoom_fac) for i in range(n_agents)]
         self.action_space = 9 # up, down, left, right, up-left, up-right, down-left, down-right, stay
 
     def transition(self, action):
@@ -224,10 +225,10 @@ class ExploreDiscretized(ExploreContinuous):
             if agent.done:
                 states.append(agent.state.copy())
                 continue
-            x, y = np.array(agent.state)*self.coarseness
+            x, y = np.array(agent.state)*self.zoom_fac
             dx, dy = directions[:, action[i]]
-            x_ = max(0, min(self.size - 1, x + dx))/self.coarseness
-            y_ = max(0, min(self.size - 1, y + dy))/self.coarseness
+            x_ = max(0, min(self.size*self.zoom_fac, x + dx))/self.zoom_fac
+            y_ = max(0, min(self.size*self.zoom_fac, y + dy))/self.zoom_fac
             agent.state = [x_, y_]
             states.append(agent.state.copy())
         return states
@@ -253,11 +254,11 @@ class ExploreDiscretized(ExploreContinuous):
 
 class Agent(object):
 
-    def __init__(self, index, size, coarseness=None, continuous=True):
+    def __init__(self, index, size, zoom_fac=None, continuous=True):
         self.index = index
         self.env_size = size
         self.continuous = continuous
-        self.coarseness = coarseness
+        self.zoom_fac = zoom_fac
         self.start = self.reset()
         self.state = self.start.copy()
         self.done = False
@@ -266,8 +267,8 @@ class Agent(object):
         state = (np.random.rand(2) * self.env_size).tolist()
         if not self.continuous:
             state = np.floor(state).tolist()
-        if self.coarseness is not None:
-            state = np.floor(np.array(state)*self.coarseness)/self.coarseness
+        if self.zoom_fac is not None:
+            state = np.floor(np.array(state)*self.zoom_fac)/self.zoom_fac
             state = state.tolist()
         return state
 
