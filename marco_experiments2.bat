@@ -1,5 +1,5 @@
-python main.py --numpy_seed 5 --torch_seed 5 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.003 --meta_lr 0.002 --thresholds 10 --environment Space
-python main.py --numpy_seed 6 --torch_seed 6 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.003 --meta_lr 0.002 --thresholds 10 --environment Space
-python main.py --numpy_seed 7 --torch_seed 7 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.003 --meta_lr 0.002 --thresholds 10 --environment Space
-python main.py --numpy_seed 8 --torch_seed 8 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.003 --meta_lr 0.002 --thresholds 10 --environment Space
-python main.py --numpy_seed 9 --torch_seed 9 --n_meta_agent_learning_cycles 40 --n_agents_learning_cycles 30 --lr 0.003 --meta_lr 0.002 --thresholds 10 --environment Space
+python CMIX/compare.py --numpy_seed 5 --torch_seed 5 --training-epochs 100000 --environment Congestion --threshold 1.5 --shuffle
+python CMIX/compare.py --numpy_seed 6 --torch_seed 6 --training-epochs 100000 --environment Congestion --threshold 1.5 --shuffle
+python CMIX/compare.py --numpy_seed 7 --torch_seed 7 --training-epochs 100000 --environment Congestion --threshold 1.5 --shuffle
+python CMIX/compare.py --numpy_seed 8 --torch_seed 8 --training-epochs 100000 --environment Congestion --threshold 1.5 --shuffle
+python CMIX/compare.py --numpy_seed 9 --torch_seed 9 --training-epochs 100000 --environment Congestion --threshold 1.5 --shuffle
