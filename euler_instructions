@@ -17,7 +17,7 @@ scp -r mmagno@euler.ethz.ch:safe_multiagent_RL/results .
 (instead of mmagno put your username)
 
 Run experiments on Git Bash (submit the job):
-bsub -n 4 bash ./marco_experiments.bat (submit the job)
+bsub -n 1 -W 6:00 bash ./marco_experiments1.bat (submit the job)
 bash ./marco_experiments.bat (run from terminal)
 
 Activate virtual environment:
