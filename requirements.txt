@@ -1,2 +1,4 @@
 torch==1.11
 gym==0.21.0
+torch
+keras
