@@ -1,5 +1,5 @@
 import numpy as np
-#from gym.envs.classic_control import rendering
+from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
@@ -10,9 +10,11 @@ class Space(object):
         self.size = size
         self.n_agents = n_agents
         self.agents_size = agents_size
-        self.agents = [Agent(i, size) for i in range(n_agents)]
+        self.agents = [Agent(i, size, agents_size) for i in range(n_agents)]
         self.n_landmarks = n_landmarks if n_landmarks is not None else 1
-        self.start_landmarks = [(np.random.rand(2)*size).tolist() for _ in range(n_landmarks)]
+        #self.start_landmarks = [(np.random.rand(2)*size).tolist() for _ in range(n_landmarks)]
+        self.start_landmarks = [[(self.size)/2, self.size]]
+        print(self.start_landmarks)
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
         self.action_space = 2  # (up, down), (left, right)
@@ -64,8 +66,8 @@ class Space(object):
                 continue
             x, y = agent.state
             dx, dy = np.squeeze(a)
-            x_ = max(0, min(self.size - 1, x + dx))
-            y_ = max(0, min(self.size - 1, y + dy))
+            x_ = max(0, min(self.size, x + dx))
+            y_ = max(0, min(self.size, y + dy))
             agent.state = [x_, y_]
             states.append(agent.state.copy())
             for land in self.landmarks:
@@ -117,7 +119,7 @@ class Space(object):
     def _intToCouple(self, n):
         return int(np.floor(n / self.size)), int(n % self.size)
 
-"""
+
     def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
@@ -131,10 +133,10 @@ class Space(object):
 
         agents_render = []
         for agent in self.agents:
-            agent_render = self.viewer.draw_circle(radius=0.4)
+            agent_render = self.viewer.draw_circle(radius=self.agents_size)
             agent_render.set_color(.8, 0, 0)
             agent_x, agent_y = agent.state
-            transform = rendering.Transform(translation=(agent_x + 0.5, agent_y + 0.5))
+            transform = rendering.Transform(translation=(agent_x, agent_y))
             agent_render.add_attr(transform)
             agents_render.append(agent_render)
 
@@ -143,36 +145,38 @@ class Space(object):
             landmark_render = self.viewer.draw_circle(radius=0.45)
             landmark_render.set_color(0, 0.8, 0)
             landmark_x, landmark_y = landmark
-            transform = rendering.Transform(translation=(landmark_x + 0.5, landmark_y + 0.5))
+            transform = rendering.Transform(translation=(landmark_x, landmark_y))
             landmark_render.add_attr(transform)
             landmarks_render.append(landmark_render)
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-"""
+
 
 
 class Agent(object):
 
-    def __init__(self, index, size):
+    def __init__(self, index, size, agent_size):
         self.index = index
         self.env_size = size
+        self.agent_size = agent_size
         self.start = self.reset()
         self.state = self.start.copy()
         self.done = False
 
     def reset(self):
-        return (np.random.rand(2)*self.env_size).tolist()
+        #return (np.random.rand(2)*self.env_size).tolist()
+        return [(2*self.index + 1)*self.agent_size, 0]
 
 if __name__ == '__main__':
-    size = 10
+    size = 3
     n_agents = 3
-    n_landmarks = 3
+    n_landmarks = 1
 
     env = Space(size, n_agents, n_landmarks, shuffle=False)
 
     state = env.reset()
 
-    #env.render()
+    env.render()
 
     for i in range(100):
         action = [[random() for j in range(env.action_space)] for k in range(n_agents)]
@@ -180,4 +184,4 @@ if __name__ == '__main__':
         state, reward, constraint, done = env.step(action)
         print(state, reward, constraint, done)
 
-        #env.render()
+        env.render()
