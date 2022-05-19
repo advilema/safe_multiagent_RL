@@ -162,7 +162,7 @@ class ExploreDiscretized(ExploreContinuous):
         self.coarseness = coarseness
         self.zoom_fac = self.coarseness/self.size
         self.agents = [Agent(i, size, zoom_fac=self.zoom_fac) for i in range(n_agents)]
-        self.agents = [Agent(i, size, coarseness=self.coarseness) for i in range(n_agents)]
+        self.agents = [Agent(i, size, zoom_fac=self.zoom_fac) for i in range(n_agents)]
         self.action_space = [9] * self.n_agents # up, down, left, right, up-left, up-right, down-left, down-right, stay
         self.observation_spaces = [self.state_space] * self.n_agents
         self.delta = -1
