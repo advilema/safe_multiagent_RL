@@ -1,5 +1,5 @@
 import numpy as np
-from gym.envs.classic_control import rendering
+#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
@@ -108,6 +108,7 @@ class Cross(object):
         return int(np.floor(n / self.size)), int(n % self.size)
 
 
+"""
     def render(self, mode='human', close=False):
         if close:
             if self.viewer is not None:
@@ -138,7 +139,7 @@ class Cross(object):
             landmarks_render.append(landmark_render)
 
         return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-
+"""
 
 
 class Agent(object):
@@ -167,11 +168,11 @@ if __name__ == '__main__':
     n_agents = 3
     n_landmarks = 1
 
-    env = Space(size, n_agents, n_landmarks, shuffle=False)
+    env = Cross(size, n_agents, n_landmarks, shuffle=False)
 
     state = env.reset()
 
-    env.render()
+    #env.render()
 
     for i in range(100):
         action = [[random() for j in range(env.action_space)] for k in range(n_agents)]
@@ -179,4 +180,4 @@ if __name__ == '__main__':
         state, reward, constraint, done = env.step(action)
         print(state, reward, constraint, done)
 
-        env.render()
+        #env.render()
