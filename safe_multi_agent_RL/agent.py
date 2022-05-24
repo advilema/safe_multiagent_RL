@@ -169,7 +169,7 @@ class ReinforceAgent(AbstractAgent):
         self.log_probs = []
 
 
-class A2CAgent(AbstractAgent):
+class ACAgent(AbstractAgent):
     def __init__(self, env, params, continuous=False, hidden_size_actor=16, hidden_size_critic1=128, hidden_size_critic2=256):
         super().__init__(env, params, continuous=continuous, hidden_size=hidden_size_actor)
         self.critic = Critic(env, hidden_size_critic1, hidden_size_critic2)

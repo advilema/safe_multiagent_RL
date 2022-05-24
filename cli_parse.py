@@ -7,7 +7,7 @@ def cli():
     parser.add_argument('--numpy_seed', type=int, default=0)
     parser.add_argument('--torch_seed', type=int, default=0)
     parser.add_argument('--environment', type=str, default='ExploreContinuous')
-    parser.add_argument('--algo', type=str, default='A2C')
+    parser.add_argument('--algo', type=str, default='ac')
     parser.add_argument('--n_meta_agent_learning_cycles', type=int, default=40)
     parser.add_argument('--n_agents_learning_cycles', type=int, default=30)
     parser.add_argument('--batch_size', type=int, default=50)
