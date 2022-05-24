@@ -19,7 +19,7 @@ def cli():
     parser.add_argument('--decay', type=float, default=1.0)
     parser.add_argument('--lambda_0', type=float, default=0)
     parser.add_argument('--size', type=int, default=6)
-    parser.add_argument('--coarseness', type=int, default=6)
+    parser.add_argument('--coarseness', type=int, default=None)
     parser.add_argument('--noise', type=float, default=0.1)
     parser.add_argument('--n_agents', type=int, default=4)
     parser.add_argument('--n_landmarks', type=int, default=1)
