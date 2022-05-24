@@ -3,7 +3,7 @@ import torch
 from safe_multi_agent_RL.agent import ReinforceAgent
 from safe_multi_agent_RL.buffer import Buffer
 from safe_multi_agent_RL.meta_agent import MetaAgent
-from safe_multi_agent_RL.util import make_env, print_info
+from safe_multi_agent_RL.util import make_env, print_info, make_agent
 from cli_parse import cli
 import time
 
@@ -14,7 +14,7 @@ if __name__ == '__main__':
     torch.manual_seed(params.torch_seed)
 
     env, continuous = make_env(params)
-    agents = [ReinforceAgent(env, params.lr, params.gamma, continuous=continuous) for i in range(params.n_agents)]
+    agents = [make_agent(env, params, continuous) for i in range(params.n_agents)]
     if not params.unconstrained:
         meta_agent = MetaAgent(env.constraint_space, params.gamma, params.meta_lr, params.thresholds,
                                start_learning_cycle=params.n_agents_learning_cycles-4, decay=params.decay, lambda_0=params.lambda_0)
@@ -30,7 +30,7 @@ if __name__ == '__main__':
                     log_probs = []
                     actions = []
                     for agent in agents:
-                        action, log_prob = agent.act(np.array(state).flatten()) #TODO: add logprob
+                        action, log_prob = agent.act(np.array(state).flatten())
                         log_probs.append(log_prob)
                         actions.append(action)
                     state, reward, constraint, done = env.step(actions)

@@ -209,8 +209,8 @@ class ExploreDiscretized(ExploreContinuous):
         reward = self.reward()
         constraint = self.constraint(action)
 
-        #global_reward = [reward[0] - self.delta, self.avg_cost_ubound - sum(constraint)/self.n_agents]
-        global_reward = [reward[0], self.avg_cost_ubound - sum(constraint) / self.n_agents]
+        global_reward = [reward[0] - self.delta, self.avg_cost_ubound - sum(constraint)/self.n_agents]
+        #global_reward = [reward[0], self.avg_cost_ubound - sum(constraint) / self.n_agents]
         self.delta = self.tau * self.delta + (1 - self.tau) * reward[0]
         local_reward = [global_reward] * self.n_agents
 

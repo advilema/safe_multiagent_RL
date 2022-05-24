@@ -3,44 +3,32 @@ from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
-class Space(object):
+class Cross(object):
     """This class implements a grid MDP."""
 
-    def __init__(self, size, n_agents, n_landmarks=None, shuffle=True, agents_size=0.5):
-        self.size = size
-        self.n_agents = n_agents
+    def __init__(self, agents_size=0.5):
+        self.cross = [[0,0,1,1,0,0],
+                      [0,0,1,1,0,0],
+                      [1,1,1,1,1,1],
+                      [1,1,1,1,1,1],
+                      [0,0,1,1,0,0],
+                      [0,0,1,1,0,0]]
+        self.size = 6
+        self.n_agents = 4
         self.agents_size = agents_size
-        self.agents = [Agent(i, size, agents_size) for i in range(n_agents)]
-        self.n_landmarks = n_landmarks if n_landmarks is not None else 1
-        #self.start_landmarks = [(np.random.rand(2)*size).tolist() for _ in range(n_landmarks)]
-        self.start_landmarks = [[(self.size)/2, self.size]]
-        print(self.start_landmarks)
+        self.agents = [Agent(i, self.size, agents_size) for i in range(self.n_agents)]
+        self.n_landmarks = 2
+        self.start_landmarks = [[3, 6], [0, 3]]
         self.landmarks = self.start_landmarks.copy()
-        self.shuffle = shuffle
         self.action_space = 2  # (up, down), (left, right)
-        self.state_space = 2*n_agents
-        if self.shuffle:
-            self.state_space += 2*self.n_landmarks #2D position of one agent + 2D position of the landmarks
-        print(self.state_space)
+        self.state_space = 2*self.n_agents
         self.viewer = None
         self.constraint_space = [1]
 
     def reset(self):
         for agent in self.agents:
             agent.done = False
-        if self.shuffle:
-            return self._reset()
-        else:
-            return self._restart()
-
-    def _reset(self):
-        state = []
-        for agent in self.agents:
-            agent.state = agent.reset()
-            state.append(agent.state.copy())
-        #self._reset_landmarks()
-        [state.append(landmark) for landmark in self.landmarks] #concatenate the state of each agent with the landmarks
-        #state = self.normalize_state(state)
+        state = self._restart()
         return state
 
     def _restart(self):
@@ -66,11 +54,6 @@ class Space(object):
                 continue
             x, y = agent.state
             dx, dy = np.squeeze(a)
-            norm = np.sqrt(dx**2+dy**2)
-            max_norm = 1
-            if norm > max_norm:
-                dx = dx / norm
-                dy = dy / norm
             x_ = max(0, min(self.size, x + dx))
             y_ = max(0, min(self.size, y + dy))
             agent.state = [x_, y_]
@@ -93,8 +76,6 @@ class Space(object):
 
     def step(self, action):
         state = self.transition(action)
-        if self.shuffle:
-            [state.append(landmark) for landmark in self.landmarks.copy()]
         reward = self.reward()
         constraint = self.constraint()
         done = self.check_done()
@@ -111,9 +92,11 @@ class Space(object):
 
     def _agents_landmarks_distances(self):
         states = [agent.state for agent in self.agents]
-        agents_landmarks_distances = distance_matrix(states, self.landmarks)
-        dist = np.sum(np.amin(agents_landmarks_distances, axis=1))
-        return dist
+        agents_landmarks_distances0 = distance_matrix(states[:2], [self.landmarks[0]])
+        dist0 = np.sum(np.amin(agents_landmarks_distances0, axis=1))
+        agents_landmarks_distances1 = distance_matrix(states[2:4], [self.landmarks[1]])
+        dist1 = np.sum(np.amin(agents_landmarks_distances0, axis=1))
+        return dist0+dist1
 
     def normalize_state(self, states):
         return [[s/self.size for s in state] for state in states]
@@ -170,7 +153,14 @@ class Agent(object):
 
     def reset(self):
         #return (np.random.rand(2)*self.env_size).tolist()
-        return [(2*self.index%self.env_size + 1)*self.agent_size, int(self.index/self.env_size)]
+        if self.index == 0:
+            return [2.5, 0]
+        elif self.index == 1:
+            return [3.5, 0]
+        elif self.index == 2:
+            return [6, 2.5]
+        elif self.index == 3:
+            return [6, 3.5]
 
 if __name__ == '__main__':
     size = 3

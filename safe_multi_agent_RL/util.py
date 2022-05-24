@@ -3,6 +3,8 @@ from multiagent_envs.grid import Grid
 from multiagent_envs.potential_grid import PotentialGrid
 from multiagent_envs.congestion import Congestion
 from multiagent_envs.space import Space
+from multiagent_envs.cross import Cross
+from safe_multi_agent_RL.agent import ReinforceAgent, A2CAgent
 
 def make_env(params):
     continuous = False
@@ -13,6 +15,9 @@ def make_env(params):
     elif params.environment == "ExploreContinuous":
         continuous = True
         return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights, coarseness=params.coarseness), continuous
+    elif params.environment == "Cross":
+        continuous = True
+        return Cross(), continuous
     elif params.environment == "Grid":
         return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
     elif params.environment == "Space":
@@ -24,6 +29,16 @@ def make_env(params):
         return Congestion(params.size, params.n_agents, noise=params.noise, shuffle=params.shuffle), continuous
     else:
         print("Error: params.env need to be either ExploreDiscrete, ExploreContinuous or Grid")
+        exit(1)
+
+
+def make_agent(env, params, continuous):
+    if params.algo == 'Reinforce':
+        return ReinforceAgent(env, params, continuous=continuous)
+    elif params.algo == 'A2C':
+        return A2CAgent(env, params, continuous=continuous)
+    else:
+        print("Error: params.env need to be either Reinforce or A2C")
         exit(1)
 
 
