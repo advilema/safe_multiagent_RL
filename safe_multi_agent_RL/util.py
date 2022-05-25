@@ -33,7 +33,6 @@ def make_env(params):
 
 
 def make_agent(env, params, continuous):
-    print(params.algo)
     if params.algo == 'reinforce':
         return ReinforceAgent(env, params, continuous=continuous)
     elif params.algo == 'ac':

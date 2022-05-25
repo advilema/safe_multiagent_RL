@@ -12,16 +12,13 @@ class Space(object):
         self.agents_size = agents_size
         self.agents = [Agent(i, size, agents_size) for i in range(n_agents)]
         self.n_landmarks = n_landmarks if n_landmarks is not None else 1
-        #self.start_landmarks = [(np.random.rand(2)*size).tolist() for _ in range(n_landmarks)]
         self.start_landmarks = [[(self.size)/2, self.size]]
-        print(self.start_landmarks)
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
         self.action_space = 2  # (up, down), (left, right)
         self.state_space = 2*n_agents
         if self.shuffle:
             self.state_space += 2*self.n_landmarks #2D position of one agent + 2D position of the landmarks
-        print(self.state_space)
         self.viewer = None
         self.constraint_space = [1]
 
@@ -89,7 +86,7 @@ class Space(object):
         return [self._collisions()]
 
     def check_done(self):
-        return [agent.state for agent in self.agents]
+        return [agent.done for agent in self.agents]
 
     def step(self, action):
         state = self.transition(action)
@@ -169,8 +166,8 @@ class Agent(object):
         self.done = False
 
     def reset(self):
-        #return (np.random.rand(2)*self.env_size).tolist()
-        return [(2*self.index%self.env_size + 1)*self.agent_size, int(self.index/self.env_size)]
+        return (np.random.rand(2)*self.env_size).tolist()
+        #return [(2*self.index%self.env_size + 1)*self.agent_size, int(self.index/self.env_size)]
 
 if __name__ == '__main__':
     size = 3
