@@ -43,7 +43,7 @@ class Buffer:
         self.batch_constraints = []
 
     def mean_score(self, n=100):
-        return np.mean(np.array(self.scores).T[0, -n:]), np.mean(np.array(self.modified_scores).T[0, -n:]), \
+        return np.mean(np.array(self.scores).T[:, -n:], axis=1), np.mean(np.array(self.modified_scores).T[:, -n:], axis=1), \
                [np.mean(constr[-n:]) - thresh for constr, thresh in
                 zip(np.array(self.constraints).T, self.params.thresholds)]
 

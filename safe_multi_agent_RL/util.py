@@ -43,8 +43,8 @@ def make_agent(env, params, continuous):
 
 
 def print_info(buffer, agents_learning_cycle, meta_agent_learning_cycle):
-    scores, modified_score, constraints = buffer.mean_score()
-    print('Meta-Agent lc {}\t Agents lc {}\t Score: {:.2f}, '
-          'Modified Score: {:.2f}, Constraints: {}'.format(meta_agent_learning_cycle,
+    scores, modified_scores, constraints = buffer.mean_score()
+    print('Meta-Agent lc {}\t Agents lc {}\t Scores: {}, '
+          'Modified Scores: {}, Constraints: {}'.format(meta_agent_learning_cycle,
                                                            agents_learning_cycle, scores,
-                                                           modified_score, constraints))
+                                                           modified_scores, constraints))

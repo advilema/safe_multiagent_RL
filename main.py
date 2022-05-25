@@ -44,7 +44,10 @@ if __name__ == '__main__':
                         time.sleep(0.1)
 
                     for agent, log_prob, rew in zip(agents, log_probs, modified_reward):
-                        agent.append(log_prob, rew) #TODO: add append
+                        if 'PPO' in str(type(agent)):
+                            agent.append(log_prob, rew, state, actions)
+                        else:
+                            agent.append(log_prob, rew)
                     buffer.append(reward, modified_reward, constraint)
 
                     #if all agents are done ends the episode
@@ -52,11 +55,11 @@ if __name__ == '__main__':
                         break
 
                 buffer.step()
-                [agent.step() for agent in agents] #TODO: understand agent.step()
+                [agent.step() for agent in agents]
                 if not params.unconstrained:
                     meta_agent.step()
 
-            [agent.update() for agent in agents] #TODO: understand agent.update()
+            [agent.update() for agent in agents]
             if not params.unconstrained:
                 meta_agent.increment_learning_cycle()
             if agents_learning_cycle % params.print_every == 0:
