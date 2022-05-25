@@ -4,7 +4,7 @@ from multiagent_envs.potential_grid import PotentialGrid
 from multiagent_envs.congestion import Congestion
 from multiagent_envs.space import Space
 from multiagent_envs.cross import Cross
-from safe_multi_agent_RL.agent import ReinforceAgent, ACAgent
+from safe_multi_agent_RL.agent import ReinforceAgent, ACAgent, PPOAgent
 
 def make_env(params):
     continuous = False
@@ -37,6 +37,8 @@ def make_agent(env, params, continuous):
         return ReinforceAgent(env, params, continuous=continuous)
     elif params.algo == 'ac':
         return ACAgent(env, params, continuous=continuous)
+    elif params.algo == 'ppo':
+        return PPOAgent(env, params, continuous=continuous)
     else:
         print("Error: params.env need to be either Reinforce or A2C")
         exit(1)

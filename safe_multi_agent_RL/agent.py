@@ -241,6 +241,7 @@ class PPOAgent(ACAgent):
         super().__init__(env, params, continuous=False, hidden_size_actor=16, hidden_size_critic1=128, hidden_size_critic2=256)
         self.MseLoss = nn.MSELoss()
         self.eps_clip = eps_clip
+        self.K_epochs = 10
         self.states = []
         self.actions = []
         self.old_states = []
@@ -269,33 +270,34 @@ class PPOAgent(ACAgent):
 
         # Optimize policy for K epochs
         # Evaluating old actions and values
-        log_probs = []
-        state_values = []
-        for state in self.old_states:
-            _, log_prob = self.act(state)
-            log_probs.append(log_prob)
-            state_value = super().get_value(state)
-            state_values.append(state_value)
+        for _ in range(self.K_epochs):
+            log_probs = []
+            state_values = []
+            for state in self.old_states:
+                _, log_prob = self.act(state)
+                log_probs.append(log_prob)
+                state_value = super().get_value(state)
+                state_values.append(state_value)
 
-        # match state_values tensor dimensions with rewards tensor
-        state_values = torch.squeeze(state_values)
+            # match state_values tensor dimensions with rewards tensor
+            state_values = torch.squeeze(state_values)
 
-        # Finding the ratio (pi_theta / pi_theta__old)
-        ratios = torch.exp(log_probs - old_log_probs.detach())
+            # Finding the ratio (pi_theta / pi_theta__old)
+            ratios = torch.exp(log_probs - old_log_probs.detach())
 
-        # Finding Surrogate Loss
-        advantage = [r - v for r, v in zip(torch.FloatTensor(returns), torch.cat(self.values[:-1]))]
-        advantage = torch.cat(advantage)
-        surr1 = ratios * advantage
-        surr2 = torch.clamp(ratios, 1 - self.eps_clip, 1 + self.eps_clip) * advantage
+            # Finding Surrogate Loss
+            advantage = [r - v for r, v in zip(torch.FloatTensor(returns), state_values)]
+            advantage = torch.cat(advantage)
+            surr1 = ratios * advantage
+            surr2 = torch.clamp(ratios, 1 - self.eps_clip, 1 + self.eps_clip) * advantage
 
-        # final loss of clipped objective PPO
-        loss = -torch.min(surr1, surr2) + 0.5 * self.MseLoss(state_values, returns)
+            # final loss of clipped objective PPO
+            loss = -torch.min(surr1, surr2) + 0.5 * self.MseLoss(state_values, returns)
 
-        # take gradient step
-        self.optimizer.zero_grad()
-        loss.mean().backward()
-        self.optimizer.step()
+            # take gradient step
+            self.optimizerActor.zero_grad()
+            loss.mean().backward()
+            self.optimizerCritic.step()
 
 
 
