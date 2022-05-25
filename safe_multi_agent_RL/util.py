@@ -40,7 +40,7 @@ def make_agent(env, params, continuous):
     elif params.algo == 'ppo':
         return PPOAgent(env, params, continuous=continuous)
     else:
-        print("Error: params.env need to be either Reinforce or A2C")
+        print("Error: params.env need to be either reinforce, a2c or ppo")
         exit(1)
 
 
