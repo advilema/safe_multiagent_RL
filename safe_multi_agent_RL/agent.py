@@ -244,9 +244,6 @@ class PPOAgent(ACAgent):
         self.K_epochs = 10
         self.states = []
         self.actions = []
-        self.old_states = []
-        self.old_actions = []
-        self.old_log_probs = []
 
     def append(self, log_prob, rew, state, action):
         super().append(log_prob, rew)
@@ -264,8 +261,8 @@ class PPOAgent(ACAgent):
         returns = (returns - returns.mean()) / (returns.std() + 1e-7)
 
         # convert list to tensor
-        old_states = torch.squeeze(torch.stack(self.old_states, dim=0)).detach().to(device)
-        old_actions = torch.squeeze(torch.stack(self.old_actions, dim=0)).detach().to(device)
+        old_states = torch.squeeze(torch.stack(self.states, dim=0)).detach().to(device)
+        old_actions = torch.squeeze(torch.stack(self.actions, dim=0)).detach().to(device)
         old_log_probs = torch.squeeze(torch.stack(self.old_log_probs, dim=0)).detach().to(device)
 
         # Optimize policy for K epochs
