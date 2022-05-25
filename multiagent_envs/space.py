@@ -1,5 +1,5 @@
 import numpy as np
-from gym.envs.classic_control import rendering
+#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
