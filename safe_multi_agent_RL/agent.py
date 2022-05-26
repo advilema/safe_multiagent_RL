@@ -64,12 +64,7 @@ class ContinuousPolicy(nn.Module):
 
     def get_dist(self, state): #state here is a tensor
         mu, sigma_sq = self.forward(state)
-        cov_mat = torch.diag_embed(sigma_sq).to(device)
-        #print('shape', cov_mat.shape[1])
-        #print('state', state)
-        #print('mu {}, sigma: {}'.format(mu, sigma_sq))
-        #print('cov_mat', cov_mat)
-        #print(cov_mat)
+        cov_mat = torch.diag_embed(sigma_sq + 1e-4).to(device)
         dist = MultivariateNormal(mu, cov_mat)
         return dist
 
