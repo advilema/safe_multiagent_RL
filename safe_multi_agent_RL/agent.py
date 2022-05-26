@@ -1,4 +1,4 @@
-from torch.distributions import Categorical
+from torch.distributions import Categorical, MultivariateNormal
 import math
 import numpy as np
 
@@ -33,12 +33,16 @@ class DiscretePolicy(nn.Module):
         x = self.fc2(x)
         return F.softmax(x, dim=1)
 
-    def act(self, state):
+    def get_dist(self, state):
         state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         probs = self.forward(state).cpu()
-        m = Categorical(probs)
-        action = m.sample()
-        return action.item(), m.log_prob(action)
+        dist = Categorical(probs)
+        return dist
+
+    def act(self, state):
+        dist = self.get_dist(state)
+        action = dist.sample()
+        return action, dist.log_prob(action)
 
 
 class ContinuousPolicy(nn.Module):
@@ -54,22 +58,27 @@ class ContinuousPolicy(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         mu = self.fc2(x)
-        sigma_sq = self.fc2_(x)
+        sigma_sq = F.relu(self.fc2_(x))
 
         return mu, sigma_sq
 
-    def act(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+    def get_dist(self, state): #state here is a tensor
         mu, sigma_sq = self.forward(state)
-        sigma_sq = F.softplus(sigma_sq)
+        cov_mat = torch.diag_embed(sigma_sq).to(device)
+        #print('shape', cov_mat.shape[1])
+        #print('state', state)
+        #print('mu {}, sigma: {}'.format(mu, sigma_sq))
+        #print('cov_mat', cov_mat)
+        #print(cov_mat)
+        dist = MultivariateNormal(mu, cov_mat)
+        return dist
 
-        eps = torch.randn(mu.size())
-        # calculate the probability
-        action = (mu + sigma_sq.sqrt() * Variable(eps).to(device)).data
-        prob = normal(action, mu, sigma_sq)
 
-        log_prob = prob.log().sum().unsqueeze(0)
-        return action.cpu().detach().numpy(), log_prob
+    def act(self, state): #state here is a numpy array
+        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+        dist = self.get_dist(state)
+        action = dist.sample()
+        return action, dist.log_prob(action)
 
 
 class Critic(nn.Module):
@@ -97,6 +106,7 @@ class Critic(nn.Module):
 
 class AbstractAgent:
     def __init__(self, env, params, continuous=False, hidden_size=16):
+        self.continuous = continuous
         if continuous:
             self.actor = ContinuousPolicy(env, hidden_size)
         else:
@@ -114,11 +124,12 @@ class AbstractAgent:
         """
         Return an action for the given state according to the policy
         """
-        return self.actor.act(state)
-
-    def append(self, log_prob, reward):
+        action, log_prob = self.actor.act(state)
         self.log_probs.append(log_prob)
-        self.rewards.append(reward)
+        if self.continuous:
+            return action.tolist(), log_prob
+        else:
+            return action.item(), log_prob
 
     def compute_returns(self):
         discounts = [self.gamma ** i for i in range(len(self.rewards) + 1)]
@@ -192,11 +203,10 @@ class ACAgent(AbstractAgent):
         return super().act(state)
 
     def compute_returns(self):
-        R = self.values[-1]
+        R = 0
         returns = []
-        rewards = self.rewards[:-1]
-        for step in reversed(range(len(rewards))):
-            R = rewards[step] + self.gamma * R
+        for step in reversed(range(len(self.rewards))):
+            R = self.rewards[step] + self.gamma * R
             returns.insert(0, R)
         return returns
 
@@ -205,10 +215,10 @@ class ACAgent(AbstractAgent):
         compute the policy losses at the end of an episode
         """
         returns = self.compute_returns()
-        advantage = [r - v for r, v in zip(torch.FloatTensor(returns), torch.cat(self.values[:-1]))]
+        advantage = [r - v for r, v in zip(torch.FloatTensor(returns), torch.cat(self.values))]
         advantage = torch.cat(advantage)
 
-        self.log_probs = torch.cat(self.log_probs[:-1])
+        self.log_probs = torch.cat(self.log_probs)
         actor_loss = -(self.log_probs * advantage).mean()
         critic_loss = advantage.pow(2).mean()
 
@@ -238,43 +248,56 @@ class ACAgent(AbstractAgent):
 
 class PPOAgent(ACAgent):
     def __init__(self, env, params, continuous=False, hidden_size_actor=16, hidden_size_critic1=128, hidden_size_critic2=256, eps_clip=0.2):
-        super().__init__(env, params, continuous=False, hidden_size_actor=16, hidden_size_critic1=128, hidden_size_critic2=256)
+        super().__init__(env, params, continuous=continuous, hidden_size_actor=16, hidden_size_critic1=128, hidden_size_critic2=256)
         self.MseLoss = nn.MSELoss()
         self.eps_clip = eps_clip
         self.K_epochs = 10
         self.states = []
         self.actions = []
+        self.returns = []
 
-    def append(self, log_prob, rew, state, action):
-        super().append(log_prob, rew)
-        self.states.append(state)
+    def act(self, state):
+        value = self.get_value(state)
+        action, log_prob = self.actor.act(state)
+        state = torch.FloatTensor(state).to(device)
+
+        self.values.append(value)
         self.actions.append(action)
+        self.states.append(state)
+        self.log_probs.append(log_prob)
+
+        if self.continuous:
+            return action.tolist(), log_prob
+        else:
+            return action.item(), log_prob
+
+    def evaluate(self, state, action):
+        dist = self.actor.get_dist(state)
+        log_probs = dist.log_prob(action)
+        dist_entropy = dist.entropy()
+        state_values = self.critic(state)
+        return log_probs, state_values, dist_entropy
 
     def step(self):
-        # Monte Carlo estimate of returns
-        if len(self.old_states) == 0:
-            return
-
-        # Normalizing the returns
         returns = super().compute_returns()
         returns = torch.tensor(returns, dtype=torch.float32).to(device)
         returns = (returns - returns.mean()) / (returns.std() + 1e-7)
+        self.returns.extend(returns)
+        self.rewards = []
 
+    def update(self):
         # convert list to tensor
-        old_states = torch.squeeze(torch.stack(self.states, dim=0)).detach().to(device)
+        old_states = torch.squeeze(torch.stack(self.states), dim=0).detach().to(device)
         old_actions = torch.squeeze(torch.stack(self.actions, dim=0)).detach().to(device)
-        old_log_probs = torch.squeeze(torch.stack(self.old_log_probs, dim=0)).detach().to(device)
+        old_log_probs = torch.squeeze(torch.stack(self.log_probs, dim=0)).detach().to(device)
+        returns = torch.squeeze(torch.stack(self.returns, dim=0)).detach().to(device)
 
         # Optimize policy for K epochs
         # Evaluating old actions and values
         for _ in range(self.K_epochs):
-            log_probs = []
-            state_values = []
-            for state in self.old_states:
-                _, log_prob = self.act(state)
-                log_probs.append(log_prob)
-                state_value = super().get_value(state)
-                state_values.append(state_value)
+
+            # Evaluating old actions and values
+            log_probs, state_values, dist_entropy = self.evaluate(old_states, old_actions)
 
             # match state_values tensor dimensions with rewards tensor
             state_values = torch.squeeze(state_values)
@@ -283,18 +306,24 @@ class PPOAgent(ACAgent):
             ratios = torch.exp(log_probs - old_log_probs.detach())
 
             # Finding Surrogate Loss
-            advantage = [r - v for r, v in zip(torch.FloatTensor(returns), state_values)]
-            advantage = torch.cat(advantage)
-            surr1 = ratios * advantage
-            surr2 = torch.clamp(ratios, 1 - self.eps_clip, 1 + self.eps_clip) * advantage
+            advantages = returns - state_values.detach()
+            surr1 = ratios * advantages
+            surr2 = torch.clamp(ratios, 1-self.eps_clip, 1+self.eps_clip) * advantages
 
             # final loss of clipped objective PPO
-            loss = -torch.min(surr1, surr2) + 0.5 * self.MseLoss(state_values, returns)
+            loss = -torch.min(surr1, surr2) + 0.5*self.MseLoss(state_values, returns) - 0.01*dist_entropy
 
             # take gradient step
             self.optimizerActor.zero_grad()
+            self.optimizerCritic.zero_grad()
             loss.mean().backward()
+            self.optimizerActor.step()
             self.optimizerCritic.step()
+
+        self.states = []
+        self.actions = []
+        self.log_probs = []
+        self.returns = []
 
 
 

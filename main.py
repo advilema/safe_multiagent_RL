@@ -43,11 +43,8 @@ if __name__ == '__main__':
                         #env.render()
                         time.sleep(0.1)
 
-                    for agent, log_prob, rew in zip(agents, log_probs, modified_reward):
-                        if 'PPO' in str(type(agent)):
-                            agent.append(log_prob, rew, state, actions)
-                        else:
-                            agent.append(log_prob, rew)
+                    for agent, rew in zip(agents, modified_reward):
+                        agent.rewards.append(rew)
                     buffer.append(reward, modified_reward, constraint)
 
                     #if all agents are done ends the episode
