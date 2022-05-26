@@ -34,12 +34,12 @@ class DiscretePolicy(nn.Module):
         return F.softmax(x, dim=1)
 
     def get_dist(self, state):
-        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         probs = self.forward(state).cpu()
         dist = Categorical(probs)
         return dist
 
     def act(self, state):
+        state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         dist = self.get_dist(state)
         action = dist.sample()
         return action, dist.log_prob(action)
