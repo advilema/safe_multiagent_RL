@@ -13,7 +13,10 @@ git clone https://github.com/advilema/safe_multiagent_RL.git
 cd safe_multiagent_RL
 pip install -r requirements.txt
 pip install --upgrade pip
-
+bsub -n 1 -W 6:00 bash ./giorgia_experiments3.bat
+bsub -n 1 -W 6:00 bash ./giorgia_experiments4.bat
+bsub -n 1 -W 6:00 bash ./marco_experiments1.bat
+bsub -n 1 -W 6:00 bash ./marco_experiments2.bat
 
 
 Download directory:
