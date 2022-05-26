@@ -12,7 +12,8 @@ class Space(object):
         self.agents_size = agents_size
         self.agents = [Agent(i, size, agents_size) for i in range(n_agents)]
         self.n_landmarks = n_landmarks if n_landmarks is not None else 1
-        self.start_landmarks = [[(self.size)/2, self.size]]
+        #self.start_landmarks = [[(self.size)/2, self.size]]
+        self.start_landmarks = [(np.random.rand(2) * self.size).tolist()]
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
         self.action_space = 2  # (up, down), (left, right)
@@ -103,7 +104,7 @@ class Space(object):
         if len(states) == 0:
             return 0
         agent_distances = distance_matrix(states, states)
-        n_collisions = (np.sum(agent_distances < 2*self.agents_size) - len(states))/2
+        n_collisions = (np.sum(agent_distances < self.agents_size) - len(states))/2
         return n_collisions
 
     def _agents_landmarks_distances(self):
