@@ -3,7 +3,6 @@ from multiagent_envs.grid import Grid
 from multiagent_envs.potential_grid import PotentialGrid
 from multiagent_envs.congestion import Congestion
 from multiagent_envs.space import Space
-from multiagent_envs.cross import Cross
 from safe_multi_agent_RL.agent import ReinforceAgent, ACAgent, PPOAgent
 
 def make_env(params):
@@ -15,9 +14,6 @@ def make_env(params):
     elif params.environment == "ExploreContinuous":
         continuous = True
         return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights, coarseness=params.coarseness), continuous
-    elif params.environment == "Cross":
-        continuous = True
-        return Cross(), continuous
     elif params.environment == "Grid":
         return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
     elif params.environment == "Space":
