@@ -6,8 +6,11 @@ def cli():
     parser.add_argument('--unconstrained', action='store_true')
     parser.add_argument('--numpy_seed', type=int, default=0)
     parser.add_argument('--torch_seed', type=int, default=0)
-    parser.add_argument('--environment', type=str, default='Space')
-    parser.add_argument('--algo', type=str, default='ppo') #either reinforce, ac or ppo
+    parser.add_argument('--environment', type=str, default='Collision', help='Specify the environment. You can choose between'
+                                                                             'CoverageDiscrete, CoverageDiscretized, '
+                                                                             'CoverageContinuous, Collision, and Congestion')
+    parser.add_argument('--algo', type=str, default='ppo', help='Specify the policy gradient algorithm, choose between '
+                                                                'reinforce, ac (actor-critic), and ppo.') #either reinforce, ac or ppo
     parser.add_argument('--n_meta_agent_learning_cycles', type=int, default=40)
     parser.add_argument('--n_agents_learning_cycles', type=int, default=30)
     parser.add_argument('--batch_size', type=int, default=50)

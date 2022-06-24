@@ -1,30 +1,24 @@
-from multiagent_envs.explore import ExploreContinuous, ExploreDiscrete, ExploreDiscretized
-from multiagent_envs.grid import Grid
-from multiagent_envs.potential_grid import PotentialGrid
-from multiagent_envs.congestion import Congestion
-from multiagent_envs.space import Space
+from envs.coverage import CoverageContinuous, CoverageDiscrete, CoverageDiscretized
+from envs.congestion import Congestion
+from envs.collision_avoidance import CollisionAvoidance
 from safe_multi_agent_RL.agent import ReinforceAgent, ACAgent, PPOAgent
 
 def make_env(params):
     continuous = False
-    if params.environment == "ExploreDiscrete":
-        return ExploreDiscrete(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
-    elif params.environment == "ExploreDiscretized":
-        return ExploreDiscretized(params.size, params.n_agents, coarseness=params.coarseness, shuffle=params.shuffle, weights=params.weights), continuous
-    elif params.environment == "ExploreContinuous":
+    if params.environment == "CoverageDiscrete":
+        return CoverageDiscrete(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights), continuous
+    elif params.environment == "CoverageDiscretized":
+        return CoverageDiscretized(params.size, params.n_agents, coarseness=params.coarseness, shuffle=params.shuffle, weights=params.weights), continuous
+    elif params.environment == "CoverageContinuous":
         continuous = True
-        return ExploreContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights, coarseness=params.coarseness), continuous
-    elif params.environment == "Grid":
-        return Grid(params.size, params.n_agents, params.n_landmarks, shuffle=params.shuffle), continuous
-    elif params.environment == "Space":
+        return CoverageContinuous(params.size, params.n_agents, shuffle=params.shuffle, weights=params.weights, coarseness=params.coarseness), continuous
+    elif params.environment == "Collision":
         continuous = True
-        return Space(params.size, params.n_agents, n_landmarks=params.n_landmarks, shuffle=params.shuffle), continuous
-    elif params.environment == "PotentialGrid":
-        return PotentialGrid(params.size, params.n_agents), continuous
+        return CollisionAvoidance(params.size, params.n_agents, n_landmarks=params.n_landmarks, shuffle=params.shuffle), continuous
     elif params.environment == "Congestion":
         return Congestion(params.size, params.n_agents, noise=params.noise, shuffle=params.shuffle), continuous
     else:
-        print("Error: params.env need to be either ExploreDiscrete, ExploreContinuous or Grid")
+        print("Error: params.env need to be either CoverageDiscrete, CoverageDiscretized, CoverageContinuous, Collision or Congestion")
         exit(1)
 
 

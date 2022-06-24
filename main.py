@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from safe_multi_agent_RL.agent import ReinforceAgent
 from safe_multi_agent_RL.buffer import Buffer
 from safe_multi_agent_RL.meta_agent import MetaAgent
 from safe_multi_agent_RL.util import make_env, print_info, make_agent
@@ -8,7 +7,7 @@ from cli_parse import cli
 import time
 
 
-if __name__ == '__main__':
+def main() -> None:
     params = cli()
     np.random.seed(params.numpy_seed)
     torch.manual_seed(params.torch_seed)
@@ -17,7 +16,8 @@ if __name__ == '__main__':
     agents = [make_agent(env, params, continuous) for i in range(params.n_agents)]
     if not params.unconstrained:
         meta_agent = MetaAgent(env.constraint_space, params.gamma, params.meta_lr, params.thresholds,
-                               start_learning_cycle=params.n_agents_learning_cycles-4, decay=params.decay, lambda_0=params.lambda_0)
+                               start_learning_cycle=params.n_agents_learning_cycles - 4, decay=params.decay,
+                               lambda_0=params.lambda_0)
     else:
         meta_agent = None
     buffer = Buffer(params, constrained=not params.unconstrained)
@@ -39,15 +39,15 @@ if __name__ == '__main__':
                     else:
                         modified_reward = reward
 
-                    if params.render and agents_learning_cycle > 0 and batch%100 == 0:
-                        #env.render()
+                    if params.render and agents_learning_cycle > 0 and batch % 100 == 0:
+                        # env.render()
                         time.sleep(0.1)
 
                     for agent, rew in zip(agents, modified_reward):
                         agent.rewards.append(rew)
                     buffer.append(reward, modified_reward, constraint)
 
-                    #if all agents are done ends the episode
+                    # if all agents are done ends the episode
                     if np.all(done):
                         break
 
@@ -72,3 +72,6 @@ if __name__ == '__main__':
 
     buffer.save_results()
 
+
+if __name__ == '__main__':
+    main()

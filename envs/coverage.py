@@ -5,7 +5,7 @@ from random import random
 import time
 
 
-class ExploreContinuous(object):
+class CoverageContinuous(object):
     """This class implements a grid MDP."""
 
     def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None, coarseness=None):
@@ -163,7 +163,7 @@ class ExploreContinuous(object):
 """
 
 
-class ExploreDiscrete(ExploreContinuous):
+class CoverageDiscrete(CoverageContinuous):
     def __init__(self, size, n_agents, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
         super().__init__(size, n_agents, agents_size=agents_size, fieldview_size=fieldview_size,
                          weights=weights)
@@ -207,7 +207,7 @@ class ExploreDiscrete(ExploreContinuous):
 """
 
 
-class ExploreDiscretized(ExploreContinuous):
+class CoverageDiscretized(CoverageContinuous):
     def __init__(self, size, n_agents, coarseness=20, shuffle=False, agents_size=0.5, fieldview_size=None, weights=None):
         super().__init__(size, n_agents, shuffle=shuffle, agents_size=agents_size, fieldview_size=fieldview_size,
                          weights=weights)
@@ -278,15 +278,11 @@ if __name__ == '__main__':
     n_agents = 10
     np.random.seed(9)
 
-    env = ExploreContinuous(size, n_agents, shuffle=False)
+    env = CoverageContinuous(size, n_agents, shuffle=False)
 
     state = env.reset()
-
-    #env.render()
 
     for i in range(100):
         action = [[random() for j in range(env.action_space)] for k in range(n_agents)]
         state, reward, constraint, done = env.step(action)
 
-        #env.render()
-        #time.sleep(100)

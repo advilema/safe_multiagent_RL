@@ -1,9 +1,9 @@
 import numpy as np
-#from gym.envs.classic_control import rendering
 from scipy.spatial import distance_matrix
 from random import random
 
-class Space(object):
+#TODO: implement matplotlib rendering
+class CollisionAvoidance(object):
     """This class implements a grid MDP."""
 
     def __init__(self, size, n_agents, n_landmarks=None, shuffle=True, agents_size=0.5):
@@ -12,7 +12,6 @@ class Space(object):
         self.agents_size = agents_size
         self.agents = [Agent(i, size, agents_size) for i in range(n_agents)]
         self.n_landmarks = n_landmarks if n_landmarks is not None else 1
-        #self.start_landmarks = [[(self.size)/2, self.size]]
         self.start_landmarks = [(np.random.rand(2) * self.size).tolist()]
         self.landmarks = self.start_landmarks.copy()
         self.shuffle = shuffle
@@ -122,39 +121,6 @@ class Space(object):
     def _intToCouple(self, n):
         return int(np.floor(n / self.size)), int(n % self.size)
 
-"""
-    def render(self, mode='human', close=False):
-        if close:
-            if self.viewer is not None:
-                self.viewer.close()
-                self.viewer = None
-            return
-
-        if self.viewer is None:
-            self.viewer = rendering.Viewer(500, 500)
-            self.viewer.set_bounds(0, self.size, 0, self.size)
-
-        agents_render = []
-        for agent in self.agents:
-            agent_render = self.viewer.draw_circle(radius=self.agents_size)
-            agent_render.set_color(.8, 0, 0)
-            agent_x, agent_y = agent.state
-            transform = rendering.Transform(translation=(agent_x, agent_y))
-            agent_render.add_attr(transform)
-            agents_render.append(agent_render)
-
-        landmarks_render = []
-        for landmark in self.landmarks:
-            landmark_render = self.viewer.draw_circle(radius=0.45)
-            landmark_render.set_color(0, 0.8, 0)
-            landmark_x, landmark_y = landmark
-            transform = rendering.Transform(translation=(landmark_x, landmark_y))
-            landmark_render.add_attr(transform)
-            landmarks_render.append(landmark_render)
-
-        return self.viewer.render(return_rgb_array=mode == 'rgb_array')
-"""
-
 
 class Agent(object):
 
@@ -175,7 +141,7 @@ if __name__ == '__main__':
     n_agents = 3
     n_landmarks = 1
 
-    env = Space(size, n_agents, n_landmarks, shuffle=False)
+    env = CollisionAvoidance(size, n_agents, n_landmarks, shuffle=False)
 
     state = env.reset()
 
