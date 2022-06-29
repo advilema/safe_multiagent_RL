@@ -71,6 +71,7 @@ def main() -> None:
             buffer.save_results()
 
     buffer.save_results()
+    print('salvati')
 
 
 if __name__ == '__main__':

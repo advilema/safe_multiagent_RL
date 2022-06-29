@@ -144,6 +144,8 @@ class Buffer:
             #json.dump(self.params._asdict(), file)
             json.dump(vars(self.params), file)
 
+        print(self.save_path)
+        print(self.scores)
         np.save(self.save_path + '/constr' + str(self.params.numpy_seed) + '.npy', self.constraints)
         np.save(self.save_path + '/scores' + str(self.params.numpy_seed) + '.npy', self.scores)
         #np.save(self.save_path + '/modified_scores.npy', self.modified_scores)
